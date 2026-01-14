@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Dancing';
+  font-weight: normal;
+  src: url('../font/DancingScript-Regular-2.ttf') format('truetype');
+}
+
+.font-Dancing {
+  font-family: 'Dancing' !important;
+  font-size: 16px;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MiSans';
+  font-weight: normal;
+  src: url('../font/MiSans-Normal.ttf') format('truetype');
+}
+
+.font-MiSans {
+  font-family: 'MiSans' !important;
+  font-size: 16px;
+  font-style: normal;
+}
