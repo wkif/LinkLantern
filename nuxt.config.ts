@@ -10,9 +10,10 @@ export default defineNuxtConfig({
   // Nitro 配置，用于 Vercel 部署
   nitro: {
     preset: 'vercel',
-    // 确保 Prisma Client 正确打包
-    externals: {
-      inline: ['@prisma/client']
+    // Prisma Client 兼容性配置
+    moduleSideEffects: ['@prisma/client'],
+    alias: {
+      '.prisma/client': './node_modules/.prisma/client'
     }
   },
 

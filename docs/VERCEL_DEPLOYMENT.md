@@ -177,7 +177,37 @@ const { PrismaClient } = pkg
 import { PrismaClient } from '@prisma/client'
 ```
 
-### 2. 数据库连接失败
+### 2. __dirname 未定义错误
+
+**错误信息**：
+```
+ReferenceError: __dirname is not defined in ES module scope
+```
+
+**解决方案**：
+已在配置中添加 Prisma 二进制目标和模块别名：
+
+```typescript
+// nuxt.config.ts
+nitro: {
+  preset: 'vercel',
+  moduleSideEffects: ['@prisma/client'],
+  alias: {
+    '.prisma/client': './node_modules/.prisma/client'
+  }
+}
+```
+
+并在 `prisma/schema.prisma` 中添加：
+
+```prisma
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "debian-openssl-1.1.x"]
+}
+```
+
+### 3. 数据库连接失败
 
 **检查清单**：
 - ✅ DATABASE_URL 环境变量是否正确设置
@@ -185,14 +215,14 @@ import { PrismaClient } from '@prisma/client'
 - ✅ 连接字符串格式是否正确
 - ✅ 数据库防火墙规则是否允许 Vercel IP
 
-### 3. 构建超时
+### 4. 构建超时
 
 **解决方案**：
 - 检查 `package.json` 中的 `postinstall` 脚本
 - 确保 Prisma Client 正确生成
 - 考虑升级 Vercel 套餐以获得更多构建时间
 
-### 4. 环境变量未生效
+### 5. 环境变量未生效
 
 **检查清单**：
 - ✅ 变量名是否正确（区分大小写）
