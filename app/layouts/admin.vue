@@ -16,7 +16,10 @@
           </div>
 
           <!-- 用户菜单 -->
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <!-- 深色模式切换 -->
+            <ColorModeToggle />
+
             <UButton to="/" variant="soft" color="primary" icon="i-mdi-home" size="sm">
               返回首页
             </UButton>

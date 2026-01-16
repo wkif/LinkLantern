@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@nuxt/ui', '@vueuse/nuxt'],
+  modules: ['@nuxt/ui', '@vueuse/nuxt', '@nuxtjs/color-mode'],
 
   css: ['~/assets/css/index.css', '~/assets/css/font.css'],
 
@@ -13,9 +13,16 @@ export default defineNuxtConfig({
     gray: 'secondary',
   },
 
-  // Nuxt UI 的颜色模式配置
+  // 颜色模式配置
   colorMode: {
-    preference: 'light',
+    preference: 'system', // 默认使用系统主题
+    fallback: 'light', // 回退到浅色模式
+    hid: 'nuxt-color-mode-script',
+    globalName: '__NUXT_COLOR_MODE__',
+    componentName: 'ColorScheme',
+    classPrefix: '',
+    classSuffix: '',
+    storageKey: 'nuxt-color-mode'
   },
 
   // Nitro 配置，用于 Vercel 部署

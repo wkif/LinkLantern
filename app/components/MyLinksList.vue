@@ -1,26 +1,141 @@
+<script setup lang="ts">
+import { useIntersectionObserver } from '@vueuse/core'
+
+const { links, loading, fetchLinks, recordClick } = useLinks()
+
+// 分类筛选
+const selectedCategory = ref<string | null>(null)
+
+// 懒加载配置
+const pageSize = 20 // 每页显示20条
+const currentPage = ref(1)
+const hasMore = ref(true)
+const loadingMore = ref(false)
+
+// 当前显示的链接（懒加载）
+const displayedLinks = ref<any[]>([])
+
+// 分类列表
+const categories = computed(() => {
+  const cats = new Set<string>()
+  links.value.forEach(link => {
+    if (link.category) cats.add(link.category)
+  })
+  return Array.from(cats).sort()
+})
+
+// 过滤后的链接
+const filteredLinks = computed(() => {
+  if (!selectedCategory.value) return links.value
+  return links.value.filter(link => link.category === selectedCategory.value)
+})
+
+// 加载更多链接
+const loadMore = () => {
+  if (!hasMore.value || loadingMore.value) return
+  
+  loadingMore.value = true
+  
+  // 模拟异步加载（实际项目中可能是 API 调用）
+  setTimeout(() => {
+    const startIndex = (currentPage.value - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    const newLinks = filteredLinks.value.slice(startIndex, endIndex)
+    
+    if (newLinks.length > 0) {
+      displayedLinks.value.push(...newLinks)
+      currentPage.value++
+    }
+    
+    // 检查是否还有更多数据
+    if (endIndex >= filteredLinks.value.length) {
+      hasMore.value = false
+    }
+    
+    loadingMore.value = false
+  }, 300)
+}
+
+// 重置懒加载状态
+const resetLazyLoad = () => {
+  currentPage.value = 1
+  displayedLinks.value = []
+  hasMore.value = true
+  loadMore()
+}
+
+// 监听过滤条件变化，重置列表
+watch(selectedCategory, () => {
+  resetLazyLoad()
+})
+
+// 监听links变化，重新加载
+watch(() => links.value.length, (newLen, oldLen) => {
+  if (newLen !== oldLen) {
+    resetLazyLoad()
+  }
+}, { immediate: false })
+
+// 节流记录点击
+const throttledRecordClick = useThrottleFn((linkId: number) => {
+  recordClick(linkId)
+}, 1000)
+
+// 处理链接点击
+const handleLinkClick = (link: any) => {
+  window.open(link.url, '_blank')
+  throttledRecordClick(link.id)
+}
+
+// 懒加载触发器元素
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+
+// 使用 IntersectionObserver 监听触发器
+useIntersectionObserver(
+  loadMoreTrigger,
+  (entries) => {
+    const entry = entries[0]
+    if (entry && entry.isIntersecting && hasMore.value && !loadingMore.value) {
+      loadMore()
+    }
+  },
+  {
+    threshold: 0.1,
+  }
+)
+
+// 组件挂载时加载数据
+onMounted(() => {
+  fetchLinks({ all: true }).then(() => {
+    resetLazyLoad()
+  })
+})
+</script>
+
 <template>
   <div class="my-links-container">
     <!-- 顶部工具栏 -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-      <div>
-        <h2 class="text-2xl font-bold mb-1">我的链接</h2>
-        <p class="text-gray-600 dark:text-gray-400">
-          共 {{ links.length }} 个链接
-          <span v-if="selectedCategory" class="ml-2">
-            · 分类：{{ selectedCategory }}
-          </span>
-        </p>
-      </div>
-
       <!-- 分类筛选 -->
       <div v-if="categories.length > 0" class="flex flex-wrap items-center gap-2">
-        <UButton size="sm" :variant="selectedCategory === null ? 'solid' : 'outline'"
-          :color="selectedCategory === null ? 'primary' : 'neutral'" @click="selectedCategory = null">
+        <UButton 
+          size="sm" 
+          :variant="selectedCategory === null ? 'solid' : 'outline'"
+          :color="selectedCategory === null ? 'primary' : 'neutral'" 
+          @click="selectedCategory = null"
+          class="transition-all duration-200"
+        >
           全部
         </UButton>
-        <UButton v-for="cat in categories" :key="cat" size="sm"
+        <UButton 
+          v-for="cat in categories" 
+          :key="cat" 
+          size="sm"
           :variant="selectedCategory === cat ? 'solid' : 'outline'"
-          :color="selectedCategory === cat ? 'primary' : 'neutral'" @click="selectedCategory = cat">
+          :color="selectedCategory === cat ? 'primary' : 'neutral'" 
+          @click="selectedCategory = cat"
+          class="transition-all duration-200"
+        >
           {{ cat }}
         </UButton>
       </div>
@@ -51,17 +166,29 @@
 
     <!-- 链接网格 -->
     <div v-else>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <UCard v-for="link in filteredLinks" :key="link.id"
-          class="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
-          @click="handleLinkClick(link)">
+      <TransitionGroup 
+        name="list" 
+        tag="div" 
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      >
+        <UCard 
+          v-for="link in displayedLinks" 
+          :key="link.id"
+          class="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group animate-fade-in"
+          @click="handleLinkClick(link)"
+        >
           <div class="flex flex-col h-full">
             <!-- 图标和标题 -->
             <div class="flex items-start gap-3 mb-3">
               <div
                 class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
-                <img v-if="link.icon" :src="link.icon" :alt="link.title" class="w-8 h-8 rounded"
-                  @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
+                <img 
+                  v-if="link.icon" 
+                  :src="link.icon" 
+                  :alt="link.title" 
+                  class="w-8 h-8 rounded"
+                  @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" 
+                />
                 <UIcon v-else name="i-mdi-web" class="text-2xl text-blue-600 dark:text-blue-400" />
               </div>
               <div class="flex-1 min-w-0">
@@ -97,6 +224,20 @@
             </div>
           </div>
         </UCard>
+      </TransitionGroup>
+
+      <!-- 懒加载触发器 -->
+      <div ref="loadMoreTrigger" class="py-8 mt-4">
+        <div v-if="loadingMore" class="flex justify-center">
+          <div class="flex items-center gap-2 text-secondary-600 dark:text-secondary-400">
+            <UIcon name="i-mdi-loading" class="animate-spin text-xl" />
+            <span>加载更多...</span>
+          </div>
+        </div>
+        <div v-else-if="!hasMore && displayedLinks.length > 0" class="text-center text-secondary-500 dark:text-secondary-400">
+          <UIcon name="i-mdi-check-circle" class="text-xl" />
+          <span class="ml-2">已加载全部 {{ displayedLinks.length }} 条链接</span>
+        </div>
       </div>
 
       <!-- 更多操作 -->
@@ -112,42 +253,27 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { useThrottleFn } from '@vueuse/core'
-
-const { links, loading, fetchLinks, recordClick } = useLinks()
-
-// 分类筛选
-const selectedCategory = ref<string | null>(null)
-
-// 分类列表
-const categories = computed(() => {
-  const cats = new Set<string>()
-  links.value.forEach(link => {
-    if (link.category) cats.add(link.category)
-  })
-  return Array.from(cats).sort()
-})
-
-// 过滤后的链接
-const filteredLinks = computed(() => {
-  if (!selectedCategory.value) return links.value
-  return links.value.filter(link => link.category === selectedCategory.value)
-})
-
-// 节流记录点击
-const throttledRecordClick = useThrottleFn((linkId: number) => {
-  recordClick(linkId)
-}, 1000)
-
-// 处理链接点击
-const handleLinkClick = (link: any) => {
-  window.open(link.url, '_blank')
-  throttledRecordClick(link.id)
+<style scoped>
+/* 列表过渡动画 */
+.list-enter-active {
+  transition: all 0.4s ease-out;
 }
 
-// 组件挂载时加载数据
-onMounted(() => {
-  fetchLinks({ all: true })  // 我的链接页获取全部数据
-})
-</script>
+.list-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+.list-move {
+  transition: transform 0.4s ease;
+}
+</style>

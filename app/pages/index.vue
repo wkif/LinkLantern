@@ -251,14 +251,14 @@ const handlePublicLinkClick = (link: any) => {
   <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative">
 
     <!-- 主要内容区域 -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 animate-fade-in">
       <!-- 搜索区域 -->
-      <div class="max-w-4xl mx-auto mb-16">
+      <div class="max-w-4xl mx-auto mb-16 animate-fade-in-down">
         <!-- 搜索框 -->
-        <div ref="searchContainerRef" class="bg-white dark:bg-primary-800/50 rounded-2xl shadow-xl p-8 border-2 dark:border-primary-700 relative backdrop-blur-sm card-hover z-50">
+        <div ref="searchContainerRef" class="bg-white dark:bg-primary-800/50 rounded-2xl shadow-xl p-8 border-2 dark:border-primary-700 relative backdrop-blur-sm hover-lift z-50">
           <form @submit.prevent="handleSearch()" class="space-y-4">
             <!-- 搜索引擎选择 -->
-            <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-4 animate-fade-in animate-delay-100">
               <UButton
                 v-for="engine in searchEngines"
                 :key="engine.value"
@@ -266,6 +266,7 @@ const handlePublicLinkClick = (link: any) => {
                 :color="selectedEngine === engine.value ? 'primary' : 'neutral'"
                 size="sm"
                 @click="selectedEngine = engine.value"
+                class="transition-all duration-300 hover:scale-105"
               >
                 <span class="flex items-center gap-2">
                   <UIcon :name="engine.icon" />
@@ -275,13 +276,13 @@ const handlePublicLinkClick = (link: any) => {
             </div>
 
             <!-- 搜索输入框 -->
-            <div class="relative">
+            <div class="relative animate-fade-in animate-delay-200">
               <div class="flex gap-2">
                 <UInput
                   v-model="searchQuery"
                   size="xl"
                   placeholder="输入搜索内容，支持历史记录和链接匹配..."
-                  class="flex-1"
+                  class="flex-1 transition-all duration-300 focus:scale-[1.02]"
                   icon="i-mdi-magnify"
                   @focus="handleInputFocus"
                   @input="handleInputChange"
@@ -290,7 +291,7 @@ const handlePublicLinkClick = (link: any) => {
                 <UButton
                   type="submit"
                   size="xl"
-                  class="btn-accent px-8 font-bold text-lg"
+                  class="btn-accent px-8 font-bold text-lg transition-all duration-300 hover:scale-105 hover-glow"
                   :disabled="!searchQuery.trim()"
                 >
                   <span class="flex items-center gap-2">
@@ -412,7 +413,7 @@ const handlePublicLinkClick = (link: any) => {
       </div>
 
       <!-- 已登录用户：Tab 切换显示内容 -->
-      <div v-if="isLoggedIn" class="max-w-7xl mx-auto relative z-10">
+      <div v-if="isLoggedIn" class="max-w-7xl mx-auto relative z-10 animate-fade-in-up animate-delay-300">
         <!-- Tab 导航 -->
         <div class="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
@@ -690,10 +691,13 @@ const handlePublicLinkClick = (link: any) => {
     <div class="fixed bottom-8 right-8 z-50">
       <!-- 未登录状态 -->
       <template v-if="!isLoggedIn">
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 animate-scale-in">
+          <!-- 深色模式切换按钮 -->
+          <ColorModeToggle />
+          
           <UButton
             to="/register"
-            class="btn-accent shadow-2xl"
+            class="btn-accent shadow-2xl transition-all duration-300 hover:scale-105 hover-glow"
             size="xl"
             icon="i-mdi-account-plus"
           >
@@ -705,7 +709,7 @@ const handlePublicLinkClick = (link: any) => {
             variant="solid"
             size="lg"
             icon="i-mdi-login"
-            class="shadow-xl"
+            class="shadow-xl transition-all duration-300 hover:scale-105"
           >
             登录
           </UButton>
@@ -718,8 +722,8 @@ const handlePublicLinkClick = (link: any) => {
           <!-- 主菜单按钮 -->
           <UButton
             @click="showFloatingMenu = !showFloatingMenu"
-            class="w-16 h-16 rounded-full shadow-2xl gradient-bg hover:scale-110 transition-transform flex items-center justify-center p-0"
-            :class="{ 'ring-4 ring-accent-400': showFloatingMenu }"
+            class="w-16 h-16 rounded-full shadow-2xl gradient-bg hover:scale-110 transition-all duration-300 flex items-center justify-center p-0 animate-breathe"
+            :class="{ 'ring-4 ring-accent-400 animate-glow': showFloatingMenu }"
           >
             <UAvatar
               :src="user?.avatar"
@@ -767,6 +771,7 @@ const handlePublicLinkClick = (link: any) => {
                     block
                     icon="i-mdi-view-dashboard"
                     @click="showFloatingMenu = false"
+                    class="transition-all duration-200 hover:scale-[1.02]"
                   >
                     管理后台
                   </UButton>
@@ -778,6 +783,7 @@ const handlePublicLinkClick = (link: any) => {
                     block
                     icon="i-mdi-link-variant"
                     @click="showFloatingMenu = false"
+                    class="transition-all duration-200 hover:scale-[1.02]"
                   >
                     我的链接
                   </UButton>
@@ -789,9 +795,20 @@ const handlePublicLinkClick = (link: any) => {
                     block
                     icon="i-mdi-account"
                     @click="showFloatingMenu = false"
+                    class="transition-all duration-200 hover:scale-[1.02]"
                   >
                     个人信息
                   </UButton>
+
+                  <UDivider />
+
+                  <!-- 深色模式切换 -->
+                  <div class="flex items-center justify-between px-3 py-2">
+                    <span class="text-sm text-secondary-700 dark:text-secondary-300 font-medium">
+                      深色模式
+                    </span>
+                    <ColorModeToggle />
+                  </div>
 
                   <UDivider />
 
@@ -801,6 +818,7 @@ const handlePublicLinkClick = (link: any) => {
                     block
                     icon="i-mdi-logout"
                     @click="handleLogout"
+                    class="transition-all duration-200 hover:scale-[1.02]"
                   >
                     退出登录
                   </UButton>
