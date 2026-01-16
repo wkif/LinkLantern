@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import pkg from '@prisma/client'
+const { PrismaClient } = pkg
 
 // 防止在开发环境中创建多个 PrismaClient 实例
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
