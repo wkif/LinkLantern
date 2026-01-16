@@ -554,6 +554,7 @@ DATABASE_URL="file:./dev.db"
 - [🔥 搜索引擎 API](./docs/SEARCH_ENGINE_API.md) - 外部 API 集成
 - [⭐ 网页推荐功能](./docs/PUBLIC_LINKS_FEATURE.md) - 公开分享机制
 - [🎛️ 管理后台指南](./docs/ADMIN_GUIDE.md) - 完整的后台管理系统
+- [💾 数据导入导出](./docs/IMPORT_EXPORT_GUIDE.md) - 备份和迁移数据
 - [📊 功能总结](./docs/FEATURES_SUMMARY.md) - 所有功能概览
 
 ## 🎯 开发计划
@@ -568,10 +569,10 @@ DATABASE_URL="file:./dev.db"
 - [x] 管理后台（完整 UI）
 - [x] 表格样式列表
 - [x] 深色模式支持
+- [x] 数据导入导出（备份和迁移）
 
 ### 计划中 🚧
 - [ ] 链接标签系统
-- [ ] 链接导入/导出
 - [ ] 用户关注系统
 - [ ] 链接评论功能
 - [ ] 数据统计图表

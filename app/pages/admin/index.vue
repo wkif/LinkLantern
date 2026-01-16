@@ -9,7 +9,7 @@ const { links, loading, fetchLinks } = useLinks()
 
 // 加载数据
 onMounted(() => {
-  fetchLinks()
+  fetchLinks({ all: true })  // 管理后台概览页获取全部数据用于统计
 })
 
 // 统计数据

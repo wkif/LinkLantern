@@ -58,6 +58,7 @@ export const useLinks = () => {
     pageSize?: number
     sortBy?: 'createdAt' | 'clicks' | 'title'
     sortOrder?: 'asc' | 'desc'
+    all?: boolean  // 是否获取全部数据（不分页）
   }) => {
     if (!accessToken.value) {
       links.value = []
@@ -75,6 +76,7 @@ export const useLinks = () => {
       if (params?.pageSize) query.append('pageSize', params.pageSize.toString())
       if (params?.sortBy) query.append('sortBy', params.sortBy)
       if (params?.sortOrder) query.append('sortOrder', params.sortOrder)
+      if (params?.all) query.append('all', 'true')  // 获取全部数据
 
       const response = await $fetch<any>(`/api/links?${query}`, {
         headers: {
@@ -248,6 +250,74 @@ export const useLinks = () => {
     }
   }
 
+  /**
+   * 导出链接数据
+   */
+  const exportLinks = async () => {
+    if (!accessToken.value) return { success: false, message: '请先登录' }
+
+    try {
+      const response = await $fetch<any>('/api/links/export', {
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+      })
+
+      if (response.success) {
+        return { success: true, data: response.data }
+      }
+      return { success: false, message: '导出失败' }
+    } catch (err: any) {
+      console.error('导出链接失败:', err)
+      return {
+        success: false,
+        message: err.data?.statusMessage || '导出失败',
+      }
+    }
+  }
+
+  /**
+   * 导入链接数据
+   */
+  const importLinks = async (data: {
+    links: Array<{
+      url: string
+      title: string
+      description?: string
+      icon?: string
+      category?: string
+      isPublic?: boolean
+    }>
+    mode: 'append' | 'replace'
+  }) => {
+    if (!accessToken.value) return { success: false, message: '请先登录' }
+
+    try {
+      const response = await $fetch<any>('/api/links/import', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+        body: data,
+      })
+
+      if (response.success) {
+        return { 
+          success: true, 
+          message: response.message,
+          data: response.data 
+        }
+      }
+      return { success: false, message: '导入失败' }
+    } catch (err: any) {
+      console.error('导入链接失败:', err)
+      return {
+        success: false,
+        message: err.data?.statusMessage || '导入失败',
+      }
+    }
+  }
+
   return {
     links: readonly(links),
     publicLinks: readonly(publicLinks),
@@ -262,6 +332,8 @@ export const useLinks = () => {
     updateLink,
     deleteLink,
     recordClick,
+    exportLinks,
+    importLinks,
   }
 }
 

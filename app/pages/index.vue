@@ -197,7 +197,7 @@ const handleLogout = () => {
 // 加载链接数据
 onMounted(() => {
   if (isLoggedIn.value) {
-    fetchLinks()
+    fetchLinks({ all: true })  // 首页获取全部数据，用于搜索建议
   }
   // 加载公开链接推荐（所有用户都可以看）
   fetchPublicLinks({ sort: 'popular', limit: 12 })
@@ -206,7 +206,7 @@ onMounted(() => {
 // 监听登录状态变化
 watch(isLoggedIn, (newVal) => {
   if (newVal) {
-    fetchLinks()
+    fetchLinks({ all: true })  // 首页获取全部数据
   }
 })
 

@@ -11,6 +11,7 @@
  * - pageSize?: number - 每页条数（默认10）
  * - sortBy?: string - 排序字段（createdAt, clicks, title）
  * - sortOrder?: string - 排序方向（asc, desc）
+ * - all?: boolean - 是否获取全部数据（不分页，用于首页和管理后台概览）
  */
 
 import prisma from '../../utils/prisma'
@@ -29,6 +30,7 @@ export default defineEventHandler(async (event) => {
     const pageSize = parseInt(query.pageSize as string) || 10
     const sortBy = (query.sortBy as string) || 'createdAt'
     const sortOrder = (query.sortOrder as string) || 'desc'
+    const all = query.all === 'true' // 是否获取全部数据
     
     // 构建查询条件
     const where: any = {
@@ -46,13 +48,26 @@ export default defineEventHandler(async (event) => {
       ]
     }
     
-    // 计算分页参数
-    const skip = (page - 1) * pageSize
-    const take = pageSize
-    
     // 构建排序条件
     const orderBy: any = {}
     orderBy[sortBy] = sortOrder
+    
+    // 如果请求全部数据（不分页）
+    if (all) {
+      const links = await prisma.link.findMany({
+        where,
+        orderBy,
+      })
+      
+      return {
+        success: true,
+        data: links,
+      }
+    }
+    
+    // 分页查询
+    const skip = (page - 1) * pageSize
+    const take = pageSize
     
     // 查询链接总数
     const total = await prisma.link.count({ where })
