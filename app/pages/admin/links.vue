@@ -59,9 +59,27 @@ const allCategories = ref<string[]>([])
 
 // 获取所有分类（独立请求，不分页）
 const fetchAllCategories = async () => {
-  const { categories } = useLinks()
-  allCategories.value = categories.value
+  // 获取所有链接数据以获取分类列表
+  const { fetchLinks } = useLinks()
+  const response = await $fetch<any>('/api/links?all=true', {
+    headers: {
+      Authorization: `Bearer ${useAuth().accessToken.value}`,
+    },
+  })
+  
+  if (response.success && response.data) {
+    const categories = new Set<string>()
+    response.data.forEach((link: any) => {
+      if (link.category) categories.add(link.category)
+    })
+    allCategories.value = Array.from(categories).sort()
+  }
 }
+
+// 初始加载所有分类
+onMounted(() => {
+  fetchAllCategories()
+})
 
 // 分类选项（用于下拉菜单）
 const categoryOptions = computed(() => {
@@ -71,10 +89,83 @@ const categoryOptions = computed(() => {
   ]
 })
 
+// 表单分类选项（用于新建/编辑表单）
+const formCategoryOptions = computed(() => {
+  return allCategories.value
+})
+
+// 是否显示自定义分类输入框
+const showCustomCategory = ref(false)
+
 // 过滤和排序后的链接 - 现在由后端处理，直接使用返回的数据
 const filteredLinks = computed(() => {
   return links.value
 })
+
+// 自动获取图标
+const fetchingIcon = ref(false)
+const fetchIconFromUrl = async () => {
+  if (!form.value.url) {
+    toast.add({
+      title: '提示',
+      description: '请先填写 URL',
+      color: 'warning',
+    })
+    return
+  }
+
+  // 验证 URL 格式
+  let url: URL
+  try {
+    url = new URL(form.value.url)
+  } catch (error) {
+    toast.add({
+      title: '错误',
+      description: 'URL 格式不正确',
+      color: 'error',
+    })
+    return
+  }
+
+  fetchingIcon.value = true
+  
+  try {
+    // 方法1: 使用 Google Favicon 服务（最可靠）
+    const domain = url.hostname
+    const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+    
+    // 测试图标是否可访问
+    const img = new Image()
+    img.onload = () => {
+      form.value.icon = googleFaviconUrl
+      toast.add({
+        title: '成功',
+        description: '图标已自动获取',
+        color: 'success',
+      })
+      fetchingIcon.value = false
+    }
+    img.onerror = () => {
+      // 如果 Google 服务失败，尝试使用 favicon.ico
+      const fallbackUrl = `${url.protocol}//${url.hostname}/favicon.ico`
+      form.value.icon = fallbackUrl
+      toast.add({
+        title: '提示',
+        description: '已使用默认图标路径，请检查是否正确显示',
+        color: 'warning',
+      })
+      fetchingIcon.value = false
+    }
+    img.src = googleFaviconUrl
+  } catch (error) {
+    toast.add({
+      title: '失败',
+      description: '无法获取网站图标',
+      color: 'error',
+    })
+    fetchingIcon.value = false
+  }
+}
 
 // 模态框状态
 const showAddModal = ref(false)
@@ -107,6 +198,7 @@ const resetForm = () => {
 // 打开添加模态框
 const openAddModal = () => {
   resetForm()
+  showCustomCategory.value = false
   showAddModal.value = true
 }
 
@@ -121,6 +213,8 @@ const openEditModal = (link: Link) => {
     category: link.category || '',
     isPublic: link.isPublic,
   }
+  // 如果当前分类不在列表中，显示自定义输入框
+  showCustomCategory.value = !!link.category && !allCategories.value.includes(link.category)
   showEditModal.value = true
 }
 
@@ -513,61 +607,176 @@ const formatDate = (date: string) => {
     <!-- 添加链接模态框 -->
     <UModal v-model:open="showAddModal" title="添加链接">
       <template #body>
-        <form @submit.prevent="handleAdd" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">URL <span class="text-red-500">*</span></label>
-            <UInput
-              v-model="form.url"
-              placeholder="https://example.com"
-              size="lg"
-              icon="i-mdi-link"
-              required
-            />
+        <form @submit.prevent="handleAdd" class="space-y-5">
+          <!-- 基本信息 -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <UIcon name="i-mdi-information" />
+              基本信息
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">
+                  URL <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="form.url"
+                  placeholder="https://example.com"
+                  size="lg"
+                  icon="i-mdi-link"
+                  required
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">
+                  标题 <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="form.title"
+                  placeholder="链接标题"
+                  size="lg"
+                  icon="i-mdi-format-title"
+                  required
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">描述</label>
+                <UTextarea
+                  v-model="form.description"
+                  placeholder="简短描述这个链接的内容..."
+                  :rows="3"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">标题 <span class="text-red-500">*</span></label>
-            <UInput
-              v-model="form.title"
-              placeholder="链接标题"
-              size="lg"
-              icon="i-mdi-format-title"
-              required
-            />
+          <!-- 分类和图标 -->
+          <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <UIcon name="i-mdi-tag" />
+              分类和外观
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">分类</label>
+                <div class="space-y-2">
+                  <USelectMenu
+                    v-if="!showCustomCategory"
+                    v-model="form.category"
+                    :items="formCategoryOptions"
+                    placeholder="选择已有分类"
+                    size="lg"
+                    clearable
+                  >
+                    <template #trailing>
+                      <UButton
+                        icon="i-mdi-pencil"
+                        variant="ghost"
+                        color="neutral"
+                        size="xs"
+                        @click.stop="showCustomCategory = true"
+                      />
+                    </template>
+                  </USelectMenu>
+                  
+                  <UInput
+                    v-else
+                    v-model="form.category"
+                    placeholder="输入新分类名称"
+                    size="lg"
+                    icon="i-mdi-tag"
+                  >
+                    <template #trailing>
+                      <UButton
+                        v-if="formCategoryOptions.length > 0"
+                        icon="i-mdi-arrow-left"
+                        variant="ghost"
+                        color="neutral"
+                        size="xs"
+                        @click="showCustomCategory = false"
+                      />
+                    </template>
+                  </UInput>
+                  
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ showCustomCategory ? '输入新分类' : '从现有分类中选择' }}
+                    </p>
+                    <UButton
+                      v-if="!showCustomCategory && formCategoryOptions.length > 0"
+                      variant="link"
+                      size="xs"
+                      @click="showCustomCategory = true"
+                    >
+                      + 新建分类
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">图标URL</label>
+                <div class="flex gap-2">
+                  <UInput
+                    v-model="form.icon"
+                    placeholder="https://example.com/icon.png"
+                    size="lg"
+                    icon="i-mdi-image"
+                    class="flex-1"
+                  />
+                  <UButton
+                    icon="i-mdi-auto-fix"
+                    color="neutral"
+                    variant="outline"
+                    size="lg"
+                    :loading="fetchingIcon"
+                    :disabled="!form.url || fetchingIcon"
+                    @click="fetchIconFromUrl"
+                  >
+                    自动获取
+                  </UButton>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    可选，用于显示网站图标
+                  </p>
+                  <!-- 图标预览 -->
+                  <div v-if="form.icon" class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">预览:</span>
+                    <img 
+                      :src="form.icon" 
+                      alt="icon preview" 
+                      class="w-6 h-6 rounded"
+                      @error="(e) => (e.target as HTMLImageElement).style.opacity = '0.3'"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">描述</label>
-            <UTextarea
-              v-model="form.description"
-              placeholder="简短描述这个链接..."
-              :rows="3"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-2">图标URL</label>
-            <UInput
-              v-model="form.icon"
-              placeholder="https://example.com/icon.png"
-              size="lg"
-              icon="i-mdi-image"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-2">分类</label>
-            <UInput
-              v-model="form.category"
-              placeholder="如：工具、学习、娱乐"
-              size="lg"
-              icon="i-mdi-tag"
-            />
-          </div>
-
-          <div class="flex items-center gap-2">
-            <UCheckbox v-model="form.isPublic" />
-            <label class="text-sm font-medium">设为公开（其他用户可见）</label>
+          <!-- 可见性设置 -->
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-3">
+              <UIcon name="i-mdi-eye" />
+              可见性设置
+            </h3>
+            
+            <div class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <UCheckbox v-model="form.isPublic" />
+              <div class="flex-1">
+                <label class="text-sm font-medium cursor-pointer" @click="form.isPublic = !form.isPublic">
+                  设为公开链接
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  公开后，其他用户可以在首页的"网页推荐"中看到这个链接
+                </p>
+              </div>
+            </div>
           </div>
         </form>
       </template>
@@ -577,8 +786,8 @@ const formatDate = (date: string) => {
           <UButton variant="ghost" @click="showAddModal = false">
             取消
           </UButton>
-          <UButton color="primary" :loading="saving" :disabled="saving" @click="handleAdd">
-            添加
+          <UButton color="primary" icon="i-mdi-check" :loading="saving" :disabled="saving" @click="handleAdd">
+            {{ saving ? '添加中...' : '添加链接' }}
           </UButton>
         </div>
       </template>
@@ -587,61 +796,176 @@ const formatDate = (date: string) => {
     <!-- 编辑链接模态框 -->
     <UModal v-model:open="showEditModal" title="编辑链接">
       <template #body>
-        <form @submit.prevent="handleUpdate" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">URL <span class="text-red-500">*</span></label>
-            <UInput
-              v-model="form.url"
-              placeholder="https://example.com"
-              size="lg"
-              icon="i-mdi-link"
-              required
-            />
+        <form @submit.prevent="handleUpdate" class="space-y-5">
+          <!-- 基本信息 -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <UIcon name="i-mdi-information" />
+              基本信息
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">
+                  URL <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="form.url"
+                  placeholder="https://example.com"
+                  size="lg"
+                  icon="i-mdi-link"
+                  required
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">
+                  标题 <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="form.title"
+                  placeholder="链接标题"
+                  size="lg"
+                  icon="i-mdi-format-title"
+                  required
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">描述</label>
+                <UTextarea
+                  v-model="form.description"
+                  placeholder="简短描述这个链接的内容..."
+                  :rows="3"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">标题 <span class="text-red-500">*</span></label>
-            <UInput
-              v-model="form.title"
-              placeholder="链接标题"
-              size="lg"
-              icon="i-mdi-format-title"
-              required
-            />
+          <!-- 分类和图标 -->
+          <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <UIcon name="i-mdi-tag" />
+              分类和外观
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">分类</label>
+                <div class="space-y-2">
+                  <USelectMenu
+                    v-if="!showCustomCategory"
+                    v-model="form.category"
+                    :items="formCategoryOptions"
+                    placeholder="选择已有分类"
+                    size="lg"
+                    clearable
+                  >
+                    <template #trailing>
+                      <UButton
+                        icon="i-mdi-pencil"
+                        variant="ghost"
+                        color="neutral"
+                        size="xs"
+                        @click.stop="showCustomCategory = true"
+                      />
+                    </template>
+                  </USelectMenu>
+                  
+                  <UInput
+                    v-else
+                    v-model="form.category"
+                    placeholder="输入新分类名称"
+                    size="lg"
+                    icon="i-mdi-tag"
+                  >
+                    <template #trailing>
+                      <UButton
+                        v-if="formCategoryOptions.length > 0"
+                        icon="i-mdi-arrow-left"
+                        variant="ghost"
+                        color="neutral"
+                        size="xs"
+                        @click="showCustomCategory = false"
+                      />
+                    </template>
+                  </UInput>
+                  
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ showCustomCategory ? '输入新分类' : '从现有分类中选择' }}
+                    </p>
+                    <UButton
+                      v-if="!showCustomCategory && formCategoryOptions.length > 0"
+                      variant="link"
+                      size="xs"
+                      @click="showCustomCategory = true"
+                    >
+                      + 新建分类
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">图标URL</label>
+                <div class="flex gap-2">
+                  <UInput
+                    v-model="form.icon"
+                    placeholder="https://example.com/icon.png"
+                    size="lg"
+                    icon="i-mdi-image"
+                    class="flex-1"
+                  />
+                  <UButton
+                    icon="i-mdi-auto-fix"
+                    color="neutral"
+                    variant="outline"
+                    size="lg"
+                    :loading="fetchingIcon"
+                    :disabled="!form.url || fetchingIcon"
+                    @click="fetchIconFromUrl"
+                  >
+                    自动获取
+                  </UButton>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    可选，用于显示网站图标
+                  </p>
+                  <!-- 图标预览 -->
+                  <div v-if="form.icon" class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">预览:</span>
+                    <img 
+                      :src="form.icon" 
+                      alt="icon preview" 
+                      class="w-6 h-6 rounded"
+                      @error="(e) => (e.target as HTMLImageElement).style.opacity = '0.3'"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">描述</label>
-            <UTextarea
-              v-model="form.description"
-              placeholder="简短描述这个链接..."
-              :rows="3"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-2">图标URL</label>
-            <UInput
-              v-model="form.icon"
-              placeholder="https://example.com/icon.png"
-              size="lg"
-              icon="i-mdi-image"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-2">分类</label>
-            <UInput
-              v-model="form.category"
-              placeholder="如：工具、学习、娱乐"
-              size="lg"
-              icon="i-mdi-tag"
-            />
-          </div>
-
-          <div class="flex items-center gap-2">
-            <UCheckbox v-model="form.isPublic" />
-            <label class="text-sm font-medium">设为公开（其他用户可见）</label>
+          <!-- 可见性设置 -->
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-3">
+              <UIcon name="i-mdi-eye" />
+              可见性设置
+            </h3>
+            
+            <div class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <UCheckbox v-model="form.isPublic" />
+              <div class="flex-1">
+                <label class="text-sm font-medium cursor-pointer" @click="form.isPublic = !form.isPublic">
+                  设为公开链接
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  公开后，其他用户可以在首页的"网页推荐"中看到这个链接
+                </p>
+              </div>
+            </div>
           </div>
         </form>
       </template>
@@ -651,8 +975,8 @@ const formatDate = (date: string) => {
           <UButton variant="ghost" @click="showEditModal = false">
             取消
           </UButton>
-          <UButton color="primary" :loading="saving" :disabled="saving" @click="handleUpdate">
-            保存
+          <UButton color="primary" icon="i-mdi-content-save" :loading="saving" :disabled="saving" @click="handleUpdate">
+            {{ saving ? '保存中...' : '保存更改' }}
           </UButton>
         </div>
       </template>
