@@ -36,24 +36,36 @@ mysql://username:password@host:port/database?sslaccept=strict
 
 #### 必需的环境变量
 
-```bash
-# 数据库连接
-DATABASE_URL=mysql://username:password@host:port/database?sslaccept=strict
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `DATABASE_URL` | 数据库连接字符串 | `mysql://user:pass@host:3306/db` |
+| `JWT_SECRET` | JWT 访问令牌密钥 | `your-super-secret-key-here` |
+| `JWT_REFRESH_SECRET` | JWT 刷新令牌密钥 | `your-refresh-secret-key-here` |
 
-# JWT 密钥（生产环境必须修改！）
-JWT_SECRET=your-super-secret-key-change-this
-JWT_REFRESH_SECRET=your-refresh-secret-key-change-this
+#### 可选的环境变量
 
-# JWT 有效期（可选，有默认值）
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_EXPIRES_IN=7d
-```
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `JWT_EXPIRES_IN` | 访问令牌有效期 | `1h` |
+| `JWT_REFRESH_EXPIRES_IN` | 刷新令牌有效期 | `7d` |
 
 #### 设置步骤
 
-1. 在 Vercel 项目页面，进入 "Settings" → "Environment Variables"
-2. 逐个添加上述环境变量
-3. 选择适用的环境：Production、Preview、Development
+1. 进入你的 Vercel 项目页面
+2. 点击 "Settings" → "Environment Variables"
+3. 添加环境变量：
+   - **Name**: 输入变量名（如 `DATABASE_URL`）
+   - **Value**: 输入变量值
+   - **Environment**: 选择应用的环境
+     - ✅ Production（生产环境）
+     - ✅ Preview（预览环境，可选）
+     - ✅ Development（开发环境，可选）
+4. 点击 "Save" 保存
+
+**重要提示**：
+- 生产环境的 JWT 密钥必须使用强随机字符串
+- 不要在代码中硬编码敏感信息
+- 修改环境变量后需要重新部署才能生效
 
 ### 4. 部署项目
 
@@ -132,18 +144,17 @@ export default defineNuxtConfig({
 
 ### vercel.json
 
-自定义构建设置：
+简化的构建配置：
 
 ```json
 {
-  "buildCommand": "prisma generate && nuxt build",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "JWT_SECRET": "@jwt_secret",
-    "JWT_REFRESH_SECRET": "@jwt_refresh_secret"
-  }
+  "buildCommand": "prisma generate && nuxt build"
 }
 ```
+
+**说明**：
+- 环境变量通过 Vercel UI 设置，不需要在配置文件中引用
+- `buildCommand` 确保在构建前生成 Prisma Client
 
 ## 🐛 常见问题
 

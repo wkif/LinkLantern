@@ -1,9 +1,4 @@
 {
-  "buildCommand": "prisma generate && nuxt build",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "JWT_SECRET": "@jwt_secret",
-    "JWT_REFRESH_SECRET": "@jwt_refresh_secret"
-  }
+  "buildCommand": "prisma generate && nuxt build"
 }
 
