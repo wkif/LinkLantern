@@ -7,6 +7,17 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/index.css', '~/assets/css/font.css'],
 
+  // 自定义 Nuxt UI 主题
+  ui: {
+    primary: 'primary',
+    gray: 'secondary',
+  },
+
+  // Nuxt UI 的颜色模式配置
+  colorMode: {
+    preference: 'light',
+  },
+
   // Nitro 配置，用于 Vercel 部署
   nitro: {
     preset: 'vercel',

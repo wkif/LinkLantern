@@ -1,26 +1,28 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50/30 dark:from-primary-950 dark:to-secondary-900">
     <!-- 顶部导航栏 -->
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+    <header class="bg-white/80 dark:bg-primary-900/80 border-b border-primary-200 dark:border-primary-700 sticky top-0 z-50 backdrop-blur-md shadow-sm">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <!-- Logo 和标题 -->
           <div class="flex items-center gap-4">
-            <NuxtLink to="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span class="text-2xl">🏳️‍🌈</span>
-              <span class="font-bold text-lg">LinkLantern</span>
+            <NuxtLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div class="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-xl">
+                🏮
+              </div>
+              <span class="font-bold text-lg text-primary-700 dark:text-accent-400">LinkLantern</span>
             </NuxtLink>
-            <UBadge color="primary" variant="subtle">管理后台</UBadge>
+            <UBadge class="bg-accent-400 text-primary-900 font-semibold">管理后台</UBadge>
           </div>
 
           <!-- 用户菜单 -->
           <div class="flex items-center gap-4">
-            <UButton to="/" variant="ghost" icon="i-mdi-home">
+            <UButton to="/" variant="soft" color="primary" icon="i-mdi-home" size="sm">
               返回首页
             </UButton>
 
             <UDropdown :items="userMenuItems" :popper="{ placement: 'bottom-end' }">
-              <UAvatar :src="user?.avatar" :alt="user?.name || user?.email" size="sm" class="cursor-pointer">
+              <UAvatar :src="user?.avatar" :alt="user?.name || user?.email" size="sm" class="cursor-pointer ring-2 ring-accent-400">
                 <template v-if="!user?.avatar">
                   {{ (user?.name || user?.email || 'U').charAt(0).toUpperCase() }}
                 </template>
@@ -46,15 +48,15 @@
       <div class="flex gap-6">
         <!-- 侧边栏导航 -->
         <aside class="w-64 flex-shrink-0">
-          <UCard>
+          <UCard class="backdrop-blur-sm bg-white/90 dark:bg-primary-800/90 border border-primary-200 dark:border-primary-700 shadow-lg">
             <nav class="space-y-1">
               <NuxtLink v-for="item in navItems" :key="item.path" :to="item.path"
-                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors" :class="isActivePath(item.path)
-                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-medium'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'">
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 card-hover" :class="isActivePath(item.path)
+                  ? 'gradient-bg text-white font-semibold shadow-md'
+                  : 'hover:bg-primary-50 dark:hover:bg-primary-700 text-secondary-700 dark:text-secondary-300'">
                 <UIcon :name="item.icon" class="text-xl" />
                 <span>{{ item.label }}</span>
-                <UBadge v-if="item.badge" :color="item.badgeColor" variant="subtle" size="xs" class="ml-auto">
+                <UBadge v-if="item.badge" class="ml-auto bg-accent-400 text-primary-900 font-bold" size="xs">
                   {{ item.badge }}
                 </UBadge>
               </NuxtLink>

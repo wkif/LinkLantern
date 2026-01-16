@@ -11,6 +11,7 @@
 - 💚 **Nuxt 4** - 最新版本的 Nuxt 框架，SSR/CSR 混合渲染
 - ⚡️ **Vite** - 极速的开发体验
 - 🎨 **Nuxt UI** - 美观且功能强大的 UI 组件库
+- 🎨 **精致配色** - 温暖优雅的紫褐色主题 (#563950 + #FAED25 + #5B5561)
 - 🗄️ **Prisma + MySQL** - 现代化的数据库 ORM，类型安全的数据库访问
 - 🔗 **链接管理** - 完整的 CRUD 功能，分类管理，点击统计
 - 📄 **分页查询** - 服务端分页，支持大量数据高效管理
@@ -555,6 +556,7 @@ DATABASE_URL="file:./dev.db"
 - [⭐ 网页推荐功能](./docs/PUBLIC_LINKS_FEATURE.md) - 公开分享机制
 - [🎛️ 管理后台指南](./docs/ADMIN_GUIDE.md) - 完整的后台管理系统
 - [💾 数据导入导出](./docs/IMPORT_EXPORT_GUIDE.md) - 备份和迁移数据
+- [🎨 配色方案说明](./docs/COLOR_SCHEME.md) - UI 配色体系详解 ✨ 新增
 - [📊 功能总结](./docs/FEATURES_SUMMARY.md) - 所有功能概览
 
 ## 🎯 开发计划
@@ -570,6 +572,7 @@ DATABASE_URL="file:./dev.db"
 - [x] 表格样式列表
 - [x] 深色模式支持
 - [x] 数据导入导出（备份和迁移）
+- [x] 配色方案优化（温暖优雅主题）✨ 新增
 
 ### 计划中 🚧
 - [ ] 链接标签系统

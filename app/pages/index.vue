@@ -182,15 +182,19 @@ const throttledRecordClick = useThrottleFn((linkId: number) => {
   recordClick(linkId)
 }, 1000)
 
+// 悬浮菜单状态
+const showFloatingMenu = ref(false)
+
 // 处理登出
 const handleLogout = () => {
+  showFloatingMenu.value = false
   logout()
   toast.add({
     title: '已退出登录',
     description: '期待您的再次访问',
     color: 'info',
   })
-  router.push('/login')
+  // 不跳转，留在首页
 }
 
 
@@ -225,83 +229,33 @@ const handlePublicLinkClick = (link: any) => {
 }
 </script>
 
+<style scoped>
+/* Logo 动画 */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+</style>
+
 <template>
-  <div class="min-h-screen">
-    <!-- 顶部导航栏 -->
-    <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo -->
-          <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold">🏳️‍🌈 LinkLantern</h1>
-          </div>
-
-          <!-- 右侧菜单 -->
-          <div class="flex items-center gap-4">
-            <!-- 未登录状态 -->
-            <template v-if="!isLoggedIn">
-              <UButton to="/login" variant="ghost">
-                登录
-              </UButton>
-              <UButton to="/register" color="primary">
-                注册
-              </UButton>
-            </template>
-
-            <!-- 已登录状态 -->
-            <template v-else>
-              <UButton
-                to="/admin"
-                variant="ghost"
-                icon="i-mdi-view-dashboard"
-              >
-                管理后台
-              </UButton>
-              
-              <UButton
-                to="/admin/links"
-                variant="ghost"
-                icon="i-mdi-link-variant"
-              >
-                我的链接
-              </UButton>
-
-              <UButton
-                variant="ghost"
-                icon="i-mdi-logout"
-                @click="handleLogout"
-              >
-                退出登录
-              </UButton>
-
-              <!-- 用户头像 -->
-              <UAvatar
-                :src="user?.avatar"
-                :alt="user?.name || user?.email"
-                size="sm"
-                class="cursor-pointer"
-              >
-                <template v-if="!user?.avatar">
-                  {{ (user?.name || user?.email || 'U').charAt(0).toUpperCase() }}
-                </template>
-              </UAvatar>
-            </template>
-          </div>
-        </div>
-      </div>
-    </header>
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative">
 
     <!-- 主要内容区域 -->
     <main class="container mx-auto px-4 py-8">
       <!-- 搜索区域 -->
-      <div class="max-w-4xl mx-auto mb-12">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-bold mb-2">快速搜索</h2>
-          <p class="text-gray-600 dark:text-gray-400">选择搜索引擎，快速查找您需要的信息</p>
-        </div>
-
+      <div class="max-w-4xl mx-auto mb-16">
         <!-- 搜索框 -->
-        <div ref="searchContainerRef" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 relative">
+        <div ref="searchContainerRef" class="bg-white dark:bg-primary-800/50 rounded-2xl shadow-xl p-8 border-2 dark:border-primary-700 relative backdrop-blur-sm card-hover z-50">
           <form @submit.prevent="handleSearch()" class="space-y-4">
             <!-- 搜索引擎选择 -->
             <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
@@ -336,17 +290,20 @@ const handlePublicLinkClick = (link: any) => {
                 <UButton
                   type="submit"
                   size="xl"
-                  color="primary"
+                  class="btn-accent px-8 font-bold text-lg"
                   :disabled="!searchQuery.trim()"
                 >
-                  搜索
+                  <span class="flex items-center gap-2">
+                    <UIcon name="i-mdi-magnify" class="text-2xl" />
+                    <span>搜索</span>
+                  </span>
                 </UButton>
               </div>
 
               <!-- 搜索建议下拉列表 -->
               <div
                 v-if="showSuggestions && suggestions.length > 0"
-                class="absolute top-full left-0 right-14 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-96 overflow-y-auto"
+                class="absolute top-full left-0 right-14 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-[100] max-h-96 overflow-y-auto"
               >
                 <!-- 建议列表 -->
                 <div class="py-2">
@@ -455,7 +412,7 @@ const handlePublicLinkClick = (link: any) => {
       </div>
 
       <!-- 已登录用户：Tab 切换显示内容 -->
-      <div v-if="isLoggedIn" class="max-w-7xl mx-auto">
+      <div v-if="isLoggedIn" class="max-w-7xl mx-auto relative z-10">
         <!-- Tab 导航 -->
         <div class="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
@@ -728,6 +685,139 @@ const handlePublicLinkClick = (link: any) => {
         </div>
     </div>
     </footer>
+
+    <!-- 右下角悬浮菜单 -->
+    <div class="fixed bottom-8 right-8 z-50">
+      <!-- 未登录状态 -->
+      <template v-if="!isLoggedIn">
+        <div class="flex flex-col gap-3">
+          <UButton
+            to="/register"
+            class="btn-accent shadow-2xl"
+            size="xl"
+            icon="i-mdi-account-plus"
+          >
+            注册
+          </UButton>
+          <UButton
+            to="/login"
+            color="primary"
+            variant="solid"
+            size="lg"
+            icon="i-mdi-login"
+            class="shadow-xl"
+          >
+            登录
+          </UButton>
+        </div>
+      </template>
+
+      <!-- 已登录状态 - 悬浮菜单 -->
+      <template v-else>
+        <div class="relative flex items-center justify-center">
+          <!-- 主菜单按钮 -->
+          <UButton
+            @click="showFloatingMenu = !showFloatingMenu"
+            class="w-16 h-16 rounded-full shadow-2xl gradient-bg hover:scale-110 transition-transform flex items-center justify-center p-0"
+            :class="{ 'ring-4 ring-accent-400': showFloatingMenu }"
+          >
+            <UAvatar
+              :src="user?.avatar"
+              :alt="user?.name || user?.email"
+              size="md"
+              class="flex items-center justify-center bg-58495A"
+            >
+              <template v-if="!user?.avatar">
+                <span class="text-white font-bold text-xl">
+                  {{ (user?.name || user?.email || 'U').charAt(0).toUpperCase() }}
+                </span>
+              </template>
+            </UAvatar>
+          </UButton>
+
+          <!-- 展开的菜单项 -->
+          <transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 scale-95 translate-y-4"
+            enter-to-class="opacity-100 scale-100 translate-y-0"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 scale-100 translate-y-0"
+            leave-to-class="opacity-0 scale-95 translate-y-4"
+          >
+            <div
+              v-if="showFloatingMenu"
+              class="absolute bottom-20 right-0 flex flex-col gap-2 min-w-[200px]"
+            >
+              <!-- 用户信息卡片 -->
+              <UCard class="bg-white/95 dark:bg-primary-800/95 backdrop-blur-md shadow-xl border-2 dark:border-primary-700">
+                <div class="text-center pb-3 border-b border-primary-200 dark:border-primary-700">
+                  <p class="font-semibold text-primary-700 dark:text-primary-300 truncate">
+                    {{ user?.name || '未设置用户名' }}
+                  </p>
+                  <p class="text-xs text-secondary-600 dark:text-secondary-400 truncate">
+                    {{ user?.email }}
+                  </p>
+                </div>
+
+                <div class="space-y-2 mt-3">
+                  <UButton
+                    to="/admin"
+                    variant="soft"
+                    color="primary"
+                    block
+                    icon="i-mdi-view-dashboard"
+                    @click="showFloatingMenu = false"
+                  >
+                    管理后台
+                  </UButton>
+                  
+                  <UButton
+                    to="/admin/links"
+                    variant="soft"
+                    color="primary"
+                    block
+                    icon="i-mdi-link-variant"
+                    @click="showFloatingMenu = false"
+                  >
+                    我的链接
+                  </UButton>
+
+                  <UButton
+                    to="/admin/profile"
+                    variant="soft"
+                    color="primary"
+                    block
+                    icon="i-mdi-account"
+                    @click="showFloatingMenu = false"
+                  >
+                    个人信息
+                  </UButton>
+
+                  <UDivider />
+
+                  <UButton
+                    variant="soft"
+                    color="error"
+                    block
+                    icon="i-mdi-logout"
+                    @click="handleLogout"
+                  >
+                    退出登录
+                  </UButton>
+                </div>
+              </UCard>
+            </div>
+          </transition>
+        </div>
+      </template>
+    </div>
+
+    <!-- 点击外部关闭悬浮菜单 -->
+    <div
+      v-if="showFloatingMenu"
+      class="fixed inset-0 z-40"
+      @click="showFloatingMenu = false"
+    ></div>
   </div>
 </template>
 

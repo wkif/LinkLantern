@@ -2,5 +2,140 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* 自定义 CSS 变量 */
+:root {
+  --color-primary: #563950;
+  --color-accent: #FAED25;
+  --color-secondary: #5B5561;
+  
+  /* Nuxt UI 主色覆盖 */
+  --ui-primary: #563950;
+  --ui-bg: #ffffff;
+}
+
+.dark {
+  --ui-primary: #c3abbd;
+  --ui-bg: #311e2c;
+}
+
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* 覆盖 Nuxt UI 的默认主题色 */
+.bg-primary-500 {
+  background-color: #563950 !important;
+}
+
+.text-primary-500 {
+  color: #563950 !important;
+}
+
+.border-primary-500 {
+  border-color: #563950 !important;
+}
+
+/* 按钮主色样式覆盖 */
+button[class*="bg-primary"],
+.bg-primary {
+  background-color: #563950 !important;
+}
+
+button[class*="bg-primary"]:hover,
+.bg-primary:hover {
+  background-color: #4a3044 !important;
+}
+
+/* 自定义全局样式 */
+.gradient-bg {
+  background: linear-gradient(135deg, #563950 0%, #5B5561 100%);
+}
+
+.gradient-bg-light {
+  background: linear-gradient(135deg, rgba(86, 57, 80, 0.1) 0%, rgba(91, 85, 97, 0.1) 100%);
+}
+
+.accent-gradient {
+  background: linear-gradient(135deg, #FAED25 0%, #FFF6C2 100%);
+}
+
+/* 强调色文字渐变效果 */
+.text-accent-gradient {
+  background: linear-gradient(135deg, #FAED25 0%, #FFF3AD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 卡片悬停效果 */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(86, 57, 80, 0.15);
+}
+
+/* 按钮强调色样式 */
+.btn-accent {
+  background-color: #FAED25 !important;
+  color: #B7B4A8 !important;  /* 更深的文字颜色，提高对比度 */
+  font-weight: 700 !important;  /* 加粗文字 */
+  transition: all 0.3s ease;
+  border: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);  /* 添加轻微阴影增强可读性 */
+}
+
+.btn-accent:hover {
+  background-color: #FFF3AD !important;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(250, 237, 37, 0.4);  /* 悬停时增加阴影 */
+}
+
+.btn-accent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 主色按钮样式 */
+.btn-primary {
+  background-color: #563950 !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #4a3044 !important;
+  box-shadow: 0 4px 12px rgba(86, 57, 80, 0.3);
+}
+
+/* 链接悬停效果 */
+.link-primary {
+  color: #563950;
+  transition: color 0.3s ease;
+}
+
+.link-primary:hover {
+  color: #FAED25;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(91, 85, 97, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5B5561;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #563950;
+}
