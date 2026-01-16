@@ -1,15 +1,737 @@
 <script setup lang="ts">
-const { x, y } = useMouse()
+import { useThrottleFn } from '@vueuse/core'
+
+const { isLoggedIn, user, logout } = useAuth()
+const { links, fetchLinks, recordClick, publicLinks, loadingPublic, fetchPublicLinks } = useLinks()
+const { searchHistory, addToHistory, clearHistory, removeFromHistory, getSuggestions, fetchEngineSuggestions } = useSearch()
+const router = useRouter()
+const toast = useToast()
+
+// 搜索相关
+const searchQuery = ref('')
+const selectedEngine = ref('google')
+const showSuggestions = ref(false)
+const selectedSuggestionIndex = ref(-1)
+const engineSuggestions = ref<string[]>([])
+const fetchingSuggestions = ref(false)
+
+// 搜索引擎配置
+const searchEngines = [
+  { value: 'google', label: 'Google', icon: 'i-mdi-google', url: 'https://www.google.com/search?q=' },
+  { value: 'bing', label: 'Bing', icon: 'i-mdi-microsoft-bing', url: 'https://www.bing.com/search?q=' },
+  { value: 'baidu', label: '百度', icon: 'i-mdi-web', url: 'https://www.baidu.com/s?wd=' },
+  { value: 'github', label: 'GitHub', icon: 'i-mdi-github', url: 'https://github.com/search?q=' },
+]
+
+// 防抖获取搜索引擎建议
+let fetchTimer: NodeJS.Timeout | null = null
+const debouncedFetchSuggestions = (query: string) => {
+  if (fetchTimer) {
+    clearTimeout(fetchTimer)
+  }
+
+  if (!query.trim()) {
+    engineSuggestions.value = []
+    return
+  }
+
+  fetchTimer = setTimeout(async () => {
+    fetchingSuggestions.value = true
+    try {
+      engineSuggestions.value = await fetchEngineSuggestions(query, selectedEngine.value)
+    } finally {
+      fetchingSuggestions.value = false
+    }
+  }, 300) // 300ms 防抖
+}
+
+// 计算搜索建议
+const suggestions = computed(() => {
+  return getSuggestions(
+    searchQuery.value, 
+    Array.from(links.value),
+    selectedEngine.value,
+    engineSuggestions.value
+  )
+})
+
+// Tab 状态管理
+const activeTab = ref<'links' | 'hotboard'>(isLoggedIn.value ? 'links' : 'hotboard')
+const currentHotboardType = ref('weibo')
+
+// 切换 Tab
+const switchTab = (tab: 'links' | 'hotboard') => {
+  activeTab.value = tab
+}
+
+// 处理搜索
+const handleSearch = (query?: string) => {
+  const searchText = query || searchQuery.value
+  if (!searchText.trim()) return
+  
+  // 添加到历史记录
+  addToHistory(searchText)
+  
+  const engine = searchEngines.find(e => e.value === selectedEngine.value)
+  if (engine) {
+    window.open(engine.url + encodeURIComponent(searchText), '_blank')
+  }
+  
+  // 隐藏建议列表
+  showSuggestions.value = false
+  selectedSuggestionIndex.value = -1
+}
+
+// 处理建议项点击
+const handleSuggestionClick = (suggestion: any) => {
+  if (suggestion.type === 'link' && suggestion.url) {
+    // 如果是链接建议，先打开链接
+    window.open(suggestion.url, '_blank')
+    // 异步记录点击，使用节流
+    const link = links.value.find(l => l.url === suggestion.url)
+    if (link?.id) {
+      throttledRecordClick(link.id)
+    }
+  } else {
+    // 其他建议，执行搜索
+    searchQuery.value = suggestion.text
+    handleSearch(suggestion.text)
+  }
+  showSuggestions.value = false
+}
+
+// 从历史中移除
+const handleRemoveHistory = (text: string, event: Event) => {
+  event.stopPropagation()
+  removeFromHistory(text)
+}
+
+// 键盘导航
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (!showSuggestions.value || suggestions.value.length === 0) return
+
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault()
+      selectedSuggestionIndex.value = Math.min(
+        selectedSuggestionIndex.value + 1,
+        suggestions.value.length - 1
+      )
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      selectedSuggestionIndex.value = Math.max(selectedSuggestionIndex.value - 1, -1)
+      break
+    case 'Enter':
+      event.preventDefault()
+      if (selectedSuggestionIndex.value >= 0) {
+        handleSuggestionClick(suggestions.value[selectedSuggestionIndex.value])
+      } else {
+        handleSearch()
+      }
+      break
+    case 'Escape':
+      showSuggestions.value = false
+      selectedSuggestionIndex.value = -1
+      break
+  }
+}
+
+// 输入框聚焦
+const handleInputFocus = () => {
+  showSuggestions.value = true
+  selectedSuggestionIndex.value = -1
+}
+
+// 输入变化
+const handleInputChange = () => {
+  showSuggestions.value = true
+  selectedSuggestionIndex.value = -1
+  // 获取搜索引擎建议
+  debouncedFetchSuggestions(searchQuery.value)
+}
+
+// 切换搜索引擎时重新获取建议
+watch(selectedEngine, () => {
+  if (searchQuery.value.trim()) {
+    debouncedFetchSuggestions(searchQuery.value)
+  }
+})
+
+// 点击外部关闭建议
+const searchContainerRef = ref<HTMLElement | null>(null)
+onMounted(() => {
+  if (process.client) {
+    document.addEventListener('click', (e) => {
+      if (searchContainerRef.value && !searchContainerRef.value.contains(e.target as Node)) {
+        showSuggestions.value = false
+      }
+    })
+  }
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (fetchTimer) {
+    clearTimeout(fetchTimer)
+  }
+})
+
+// 节流记录点击（用于搜索建议中的链接点击）
+const throttledRecordClick = useThrottleFn((linkId: number) => {
+  recordClick(linkId)
+}, 1000)
+
+// 处理登出
+const handleLogout = () => {
+  logout()
+  toast.add({
+    title: '已退出登录',
+    description: '期待您的再次访问',
+    color: 'info',
+  })
+  router.push('/login')
+}
+
+
+// 加载链接数据
+onMounted(() => {
+  if (isLoggedIn.value) {
+    fetchLinks()
+  }
+  // 加载公开链接推荐（所有用户都可以看）
+  fetchPublicLinks({ sort: 'popular', limit: 12 })
+})
+
+// 监听登录状态变化
+watch(isLoggedIn, (newVal) => {
+  if (newVal) {
+    fetchLinks()
+  }
+})
+
+// 公开链接推荐的排序
+const publicSortBy = ref<'popular' | 'recent'>('popular')
+
+// 切换排序方式
+const handlePublicSortChange = (sort: 'popular' | 'recent') => {
+  publicSortBy.value = sort
+  fetchPublicLinks({ sort, limit: 12 })
+}
+
+// 处理公开链接点击
+const handlePublicLinkClick = (link: any) => {
+  window.open(link.url, '_blank')
+}
 </script>
 
 <template>
-  <div text-center>
-    <div>
-      kif
-      <div>pos: {{ x }}, {{ y }}</div>
+  <div class="min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold">🏳️‍🌈 LinkLantern</h1>
+          </div>
+
+          <!-- 右侧菜单 -->
+          <div class="flex items-center gap-4">
+            <!-- 未登录状态 -->
+            <template v-if="!isLoggedIn">
+              <UButton to="/login" variant="ghost">
+                登录
+              </UButton>
+              <UButton to="/register" color="primary">
+                注册
+              </UButton>
+            </template>
+
+            <!-- 已登录状态 -->
+            <template v-else>
+              <UButton
+                to="/admin"
+                variant="ghost"
+                icon="i-mdi-view-dashboard"
+              >
+                管理后台
+              </UButton>
+              
+              <UButton
+                to="/admin/links"
+                variant="ghost"
+                icon="i-mdi-link-variant"
+              >
+                我的链接
+              </UButton>
+
+              <UButton
+                variant="ghost"
+                icon="i-mdi-logout"
+                @click="handleLogout"
+              >
+                退出登录
+              </UButton>
+
+              <!-- 用户头像 -->
+              <UAvatar
+                :src="user?.avatar"
+                :alt="user?.name || user?.email"
+                size="sm"
+                class="cursor-pointer"
+              >
+                <template v-if="!user?.avatar">
+                  {{ (user?.name || user?.email || 'U').charAt(0).toUpperCase() }}
+                </template>
+              </UAvatar>
+            </template>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+      <!-- 搜索区域 -->
+      <div class="max-w-4xl mx-auto mb-12">
+        <div class="text-center mb-6">
+          <h2 class="text-3xl font-bold mb-2">快速搜索</h2>
+          <p class="text-gray-600 dark:text-gray-400">选择搜索引擎，快速查找您需要的信息</p>
+        </div>
+
+        <!-- 搜索框 -->
+        <div ref="searchContainerRef" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 relative">
+          <form @submit.prevent="handleSearch()" class="space-y-4">
+            <!-- 搜索引擎选择 -->
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+              <UButton
+                v-for="engine in searchEngines"
+                :key="engine.value"
+                :variant="selectedEngine === engine.value ? 'solid' : 'outline'"
+                :color="selectedEngine === engine.value ? 'primary' : 'neutral'"
+                size="sm"
+                @click="selectedEngine = engine.value"
+              >
+                <span class="flex items-center gap-2">
+                  <UIcon :name="engine.icon" />
+                  {{ engine.label }}
+                </span>
+              </UButton>
+            </div>
+
+            <!-- 搜索输入框 -->
+            <div class="relative">
+              <div class="flex gap-2">
+                <UInput
+                  v-model="searchQuery"
+                  size="xl"
+                  placeholder="输入搜索内容，支持历史记录和链接匹配..."
+                  class="flex-1"
+                  icon="i-mdi-magnify"
+                  @focus="handleInputFocus"
+                  @input="handleInputChange"
+                  @keydown="handleKeyDown"
+                />
+                <UButton
+                  type="submit"
+                  size="xl"
+                  color="primary"
+                  :disabled="!searchQuery.trim()"
+                >
+                  搜索
+                </UButton>
+              </div>
+
+              <!-- 搜索建议下拉列表 -->
+              <div
+                v-if="showSuggestions && suggestions.length > 0"
+                class="absolute top-full left-0 right-14 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-96 overflow-y-auto"
+              >
+                <!-- 建议列表 -->
+                <div class="py-2">
+                  <div
+                    v-for="(suggestion, index) in suggestions"
+                    :key="`${suggestion.type}-${suggestion.text}-${index}`"
+                    class="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center justify-between gap-3"
+                    :class="{
+                      'bg-gray-100 dark:bg-gray-700': index === selectedSuggestionIndex
+                    }"
+                    @click="handleSuggestionClick(suggestion)"
+                  >
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <!-- 图标 -->
+                      <div class="flex-shrink-0">
+                        <img
+                          v-if="suggestion.type === 'link' && suggestion.icon && !suggestion.icon.startsWith('i-')"
+                          :src="suggestion.icon"
+                          class="w-6 h-6 rounded"
+                          @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                        />
+                        <UIcon
+                          v-else
+                          :name="suggestion.icon || 'i-mdi-magnify'"
+                          class="text-xl"
+                          :class="{
+                            'text-gray-500': suggestion.type === 'history',
+                            'text-blue-500': suggestion.type === 'link',
+                            'text-primary': suggestion.type === 'suggestion',
+                          }"
+                        />
+                      </div>
+
+                      <!-- 文本内容 -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">{{ suggestion.text }}</span>
+                          <UBadge
+                            v-if="suggestion.type === 'link'"
+                            size="xs"
+                            color="info"
+                            variant="subtle"
+                          >
+                            链接
+                          </UBadge>
+                          <UBadge
+                            v-else-if="suggestion.type === 'history'"
+                            size="xs"
+                            color="neutral"
+                            variant="subtle"
+                          >
+                            历史
+                          </UBadge>
+                          <UBadge
+                            v-else-if="suggestion.type === 'engine'"
+                            size="xs"
+                            color="primary"
+                            variant="subtle"
+                          >
+                            {{ searchEngines.find(e => e.value === selectedEngine)?.label }}
+                          </UBadge>
+                        </div>
+                        <p v-if="suggestion.category" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                          {{ suggestion.category }}
+                        </p>
+                      </div>
+
+                      <!-- 操作按钮 -->
+                      <div class="flex-shrink-0">
+                        <UButton
+                          v-if="suggestion.type === 'history'"
+                          size="xs"
+                          color="neutral"
+                          variant="ghost"
+                          icon="i-mdi-close"
+                          @click="handleRemoveHistory(suggestion.text, $event)"
+                        />
+                        <UIcon
+                          v-else-if="suggestion.type === 'link'"
+                          name="i-mdi-open-in-new"
+                          class="text-gray-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 底部操作栏 -->
+                <div v-if="searchHistory.length > 0" class="border-t border-gray-200 dark:border-gray-700 px-4 py-2 bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    共 {{ searchHistory.length }} 条历史记录
+                  </span>
+                  <UButton
+                    size="xs"
+                    color="neutral"
+                    variant="ghost"
+                    @click="clearHistory(); showSuggestions = false"
+                  >
+                    清除历史
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 已登录用户：Tab 切换显示内容 -->
+      <div v-if="isLoggedIn" class="max-w-7xl mx-auto">
+        <!-- Tab 导航 -->
+        <div class="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+          <button
+            class="px-4 py-3 font-medium transition-colors relative"
+            :class="activeTab === 'links' 
+              ? 'text-primary border-b-2 border-primary' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+            @click="switchTab('links')"
+          >
+            <div class="flex items-center gap-2">
+              <UIcon name="i-mdi-link-variant" class="text-xl" />
+              <span>我的链接</span>
+              <UBadge size="xs" color="neutral" variant="subtle">{{ links.length }}</UBadge>
+            </div>
+          </button>
+
+          <button
+            class="px-4 py-3 font-medium transition-colors relative"
+            :class="activeTab === 'hotboard' 
+              ? 'text-primary border-b-2 border-primary' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+            @click="switchTab('hotboard')"
+          >
+            <div class="flex items-center gap-2">
+              <UIcon name="i-mdi-fire" class="text-xl" />
+              <span>热点榜</span>
+            </div>
+          </button>
+        </div>
+        <!-- Tab 内容 -->
+        <div>
+          <!-- 我的链接 Tab -->
+          <div v-if="activeTab === 'links'">
+            <MyLinksList />
+          </div>
+
+          <!-- 热点榜 Tab -->
+          <div v-if="activeTab === 'hotboard'">
+            <HotboardList :default-platform="currentHotboardType" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 未登录用户：显示功能介绍 -->
+      <div v-else>
+        <!-- Hero Section -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-5xl font-bold mb-6">
+            个人网页导航
+          </h2>
+          <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
+            收藏和管理您最喜欢的网站链接,打造专属的个人导航页面
+          </p>
+          
+          <!-- CTA 按钮 -->
+          <div class="flex items-center justify-center gap-4">
+            <UButton
+              to="/register"
+              size="xl"
+              color="primary"
+              icon="i-mdi-rocket-launch"
+            >
+              立即开始
+            </UButton>
+            <UButton
+              to="/login"
+              size="xl"
+              variant="ghost"
+              icon="i-mdi-login"
+            >
+              登录账户
+            </UButton>
+          </div>
+        </div>
+
+        <!-- 特性展示 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <UIcon name="i-mdi-bookmark-multiple" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 class="text-lg font-semibold">链接收藏</h3>
+              </div>
+            </template>
+            <p class="text-gray-600 dark:text-gray-400">
+              轻松保存和管理您常用的网站链接，支持分类和搜索功能
+            </p>
+          </UCard>
+
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <UIcon name="i-mdi-chart-line" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 class="text-lg font-semibold">访问统计</h3>
+              </div>
+            </template>
+            <p class="text-gray-600 dark:text-gray-400">
+              记录链接点击次数，了解您最常访问的网站
+            </p>
+          </UCard>
+
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <UIcon name="i-mdi-shield-check" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 class="text-lg font-semibold">安全可靠</h3>
+              </div>
+            </template>
+            <p class="text-gray-600 dark:text-gray-400">
+              完善的用户认证系统，您的数据安全有保障
+            </p>
+          </UCard>
+        </div>
+
+        <!-- 技术栈展示 -->
+        <div class="text-center">
+          <h3 class="text-2xl font-bold mb-6">技术栈</h3>
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <UBadge color="success" variant="subtle" size="lg">Nuxt 4</UBadge>
+            <UBadge color="info" variant="subtle" size="lg">Vue 3</UBadge>
+            <UBadge color="primary" variant="subtle" size="lg">TypeScript</UBadge>
+            <UBadge color="secondary" variant="subtle" size="lg">Prisma</UBadge>
+            <UBadge color="warning" variant="subtle" size="lg">MySQL</UBadge>
+            <UBadge color="neutral" variant="subtle" size="lg">Nuxt UI</UBadge>
+          </div>
+        </div>
+      </div>
+
+      <!-- 网页推荐部分（所有用户都可见） -->
+      <div class="max-w-7xl mx-auto mt-16">
+        <!-- 标题和控制栏 -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold mb-1 flex items-center gap-2">
+              <UIcon name="i-mdi-star-circle" class="text-yellow-500" />
+              网页推荐
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400">
+              发现其他用户分享的优质链接
+            </p>
+          </div>
+
+          <!-- 排序和筛选 -->
+          <div class="flex flex-wrap items-center gap-2">
+          <!-- 排序方式 -->
+          <div class="flex items-center gap-2">
+            <UButton
+              size="sm"
+              :variant="publicSortBy === 'popular' ? 'solid' : 'outline'"
+              :color="publicSortBy === 'popular' ? 'primary' : 'neutral'"
+              icon="i-mdi-fire"
+              @click="handlePublicSortChange('popular')"
+            >
+              热门
+            </UButton>
+            <UButton
+              size="sm"
+              :variant="publicSortBy === 'recent' ? 'solid' : 'outline'"
+              :color="publicSortBy === 'recent' ? 'primary' : 'neutral'"
+              icon="i-mdi-clock"
+              @click="handlePublicSortChange('recent')"
+            >
+              最新
+            </UButton>
+          </div>
+        </div>
+      </div>
+
+      <!-- 加载状态 -->
+      <div v-if="loadingPublic" class="text-center py-12">
+        <UIcon name="i-mdi-loading" class="animate-spin text-4xl text-primary" />
+        <p class="mt-4 text-gray-600 dark:text-gray-400">加载推荐中...</p>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else-if="publicLinks.length === 0" class="text-center py-12">
+        <div class="inline-block p-4 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+          <UIcon name="i-mdi-web-off" class="text-5xl text-gray-400" />
+        </div>
+        <h3 class="text-xl font-semibold mb-2">暂无公开推荐</h3>
+        <p class="text-gray-600 dark:text-gray-400">
+          还没有用户分享链接，成为第一个分享者吧！
+        </p>
+      </div>
+
+      <!-- 推荐链接网格 -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <UCard
+          v-for="link in publicLinks"
+          :key="link.id"
+          class="hover:shadow-lg transition-all duration-300 cursor-pointer group"
+          @click="handlePublicLinkClick(link)"
+        >
+            <div class="flex flex-col h-full">
+              <!-- 图标和标题 -->
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <img
+                    v-if="link.icon"
+                    :src="link.icon"
+                    :alt="link.title"
+                    class="w-8 h-8 rounded"
+                    @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                  />
+                  <UIcon v-else name="i-mdi-web" class="text-2xl text-green-600 dark:text-green-400" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                    {{ link.title }}
+                  </h3>
+                  <p v-if="link.category" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {{ link.category }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- 描述 -->
+              <p v-if="link.description" class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 flex-1">
+                {{ link.description }}
+              </p>
+
+              <!-- 底部信息 -->
+              <div class="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <!-- 分享者信息 -->
+                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <UIcon name="i-mdi-account-circle" />
+                  <span class="truncate">
+                    {{ link.sharedBy.name }}
+                  </span>
+                </div>
+                <!-- 统计信息 -->
+                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <UIcon name="i-mdi-chart-line" />
+                    {{ link.clicks }} 次点击
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <UIcon name="i-mdi-earth" />
+                    公开分享
+                  </span>
+                </div>
+              </div>
+            </div>
+          </UCard>
+        </div>
+
+        <!-- 提示信息 -->
+        <div v-if="publicLinks.length > 0" class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+          <p class="text-sm text-blue-700 dark:text-blue-300">
+            💡 提示：登录后可以在"管理后台"中将您的链接设置为公开，与大家分享优质内容
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- 底部 -->
+    <footer class="border-t border-gray-200 dark:border-gray-800 mt-16">
+      <div class="container mx-auto px-4 py-8">
+        <div class="text-center text-gray-600 dark:text-gray-400">
+          <p>使用 ❤️ 和 Nuxt 4 构建</p>
+          <p class="mt-2 text-sm">
+            LinkLantern © {{ new Date().getFullYear() }}
+          </p>
+        </div>
     </div>
+    </footer>
   </div>
 </template>
 
-<style lang="less" scoped></style>
+<style scoped>
+/* 自定义样式 */
+</style>
 

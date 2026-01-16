@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型 - 包含基本认证功能
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique @db.VarChar(255)
+  password      String    @db.VarChar(255)              // 加密后的密码
+  name          String?   @db.VarChar(255)
+  avatar        String?   @db.VarChar(500)              // 头像 URL
+  isActive      Boolean   @default(true)                // 账户是否激活
+  emailVerified Boolean   @default(false)               // 邮箱是否验证
+  lastLoginAt   DateTime?                               // 最后登录时间
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 关联：用户可以有多个收藏链接
+  links         Link[]
+
+  @@index([email])
+}
+
+// 链接模型 - 用户收藏的网站链接
+model Link {
+  id          Int      @id @default(autoincrement())
+  url         String   @db.VarChar(1000)               // 链接地址
+  title       String   @db.VarChar(255)                // 网站标题
+  description String?  @db.Text                        // 描述（可选）
+  icon        String?  @db.VarChar(500)                // 图标/favicon URL（可选）
+  category    String?  @db.VarChar(100)                // 分类（可选）
+  isPublic    Boolean  @default(false)                 // 是否公开
+  clicks      Int      @default(0)                     // 点击次数
+  userId      Int                                      // 所属用户ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关联到用户
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+}
+
+
