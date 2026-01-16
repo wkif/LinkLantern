@@ -81,7 +81,7 @@ JWT_REFRESH_EXPIRES_IN=7d  # 刷新令牌：7天
 # 推送数据库模型
 pnpm db:push
 
-# 填充测试数据（可选）
+# 运行种子文件（初始化数据库结构）
 pnpm db:seed
 ```
 
@@ -93,14 +93,11 @@ pnpm db:seed
 pnpm dev
 ```
 
-### 📒 使用测试账号登录
+### 📒 创建第一个账户
 
-运行 `pnpm db:seed` 后，可以使用以下测试账号登录：
-
-- 邮箱：`alice@example.com`
-- 密码：`password123`
-
-或在登录页面点击"使用测试账号"按钮快速填充。
+1. 启动开发服务器后，访问 `http://localhost:3000/register`
+2. 填写邮箱和密码进行注册
+3. 注册成功后自动跳转到首页
 
 ### 📒 数据库管理
 

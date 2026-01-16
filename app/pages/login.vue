@@ -82,17 +82,6 @@ const handleLogin = async () => {
     })
   }
 }
-
-// 测试账号快速填充
-const useDemoAccount = () => {
-  form.email = 'alice@example.com'
-  form.password = 'password123'
-  toast.add({
-    title: '已填充测试账号',
-    description: '点击登录按钮即可使用测试账号登录',
-    color: 'info',
-  })
-}
 </script>
 
 <template>
@@ -178,50 +167,6 @@ const useDemoAccount = () => {
                 <span>{{ loading ? '登录中...' : '立即登录' }}</span>
               </span>
             </UButton>
-
-            <!-- 分隔线 -->
-            <div class="relative my-6">
-              <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  或者
-                </span>
-              </div>
-            </div>
-
-            <!-- 测试账号提示 -->
-            <div class="space-y-3">
-              <UAlert
-                color="info"
-                variant="soft"
-                icon="i-mdi-test-tube"
-                class="border border-blue-200 dark:border-blue-800"
-              >
-                <template #title>
-                  <span class="font-semibold">开发测试模式</span>
-                </template>
-                <template #description>
-                  <p class="text-sm mt-1">使用测试账号快速体验系统功能</p>
-                </template>
-              </UAlert>
-              
-              <UButton
-                color="info"
-                variant="outline"
-                size="lg"
-                block
-                @click="useDemoAccount"
-                :disabled="loading"
-                class="transition-all duration-300 hover:scale-[1.02]"
-              >
-                <span class="flex items-center justify-center gap-2">
-                  <UIcon name="i-mdi-account-circle" />
-                  <span>填充测试账号</span>
-                </span>
-              </UButton>
-            </div>
           </form>
         </UCard>
 
