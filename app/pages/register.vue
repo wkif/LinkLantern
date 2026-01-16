@@ -175,130 +175,138 @@ const handleRegister = async () => {
         </div>
 
         <!-- 注册表单卡片 -->
-        <UCard class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2 border-primary-200 dark:border-primary-700 animate-slide-up">
+        <UCard class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2 dark:border-primary-700 animate-slide-up">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-primary-700 dark:text-primary-300">创建账户</h2>
+              <h2 class="text-xl font-semibold dark:text-primary-300">创建账户</h2>
               <UIcon name="i-mdi-account-plus" class="text-2xl text-accent-500" />
             </div>
           </template>
 
-          <form @submit.prevent="handleRegister" class="space-y-5">
+          <form @submit.prevent="handleRegister" class="space-y-6">
             <!-- 邮箱输入 -->
-            <UFormGroup label="邮箱地址" :error="errors.email" required>
-              <UInput
-                v-model="form.email"
-                type="email"
-                placeholder="your@email.com"
-                size="xl"
-                icon="i-mdi-email"
-                :disabled="loading"
-                @input="errors.email = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              />
-            </UFormGroup>
+            <div class="mb-6">
+              <UFormGroup label="邮箱地址" :error="errors.email" required>
+                <UInput
+                  v-model="form.email"
+                  type="email"
+                  placeholder="your@email.com"
+                  size="xl"
+                  icon="i-mdi-email"
+                  :disabled="loading"
+                  @input="errors.email = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]"
+                />
+              </UFormGroup>
+            </div>
 
             <!-- 用户名输入 -->
-            <UFormGroup label="用户名" :error="errors.name">
-              <template #description>
-                <span class="text-xs text-gray-500">可选，用于个性化您的账户</span>
-              </template>
-              <UInput
-                v-model="form.name"
-                type="text"
-                placeholder="您的昵称"
-                size="xl"
-                icon="i-mdi-account"
-                :disabled="loading"
-                @input="errors.name = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              />
-            </UFormGroup>
+            <div class="mb-6">
+              <UFormGroup label="用户名" :error="errors.name">
+                <template #description>
+                  <span class="text-xs text-gray-500">可选，用于个性化您的账户</span>
+                </template>
+                <UInput
+                  v-model="form.name"
+                  type="text"
+                  placeholder="您的昵称"
+                  size="xl"
+                  icon="i-mdi-account"
+                  :disabled="loading"
+                  @input="errors.name = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]"
+                />
+              </UFormGroup>
+            </div>
 
             <!-- 密码输入 -->
-            <UFormGroup label="密码" :error="errors.password" required>
-              <UInput
-                v-model="form.password"
-                type="password"
-                placeholder="至少 6 个字符"
-                size="xl"
-                icon="i-mdi-lock"
-                :disabled="loading"
-                @input="errors.password = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              />
-              <!-- 密码强度指示器 - 增强版 -->
-              <div v-if="form.password" class="mt-3 space-y-2">
-                <div class="flex items-center gap-3">
-                  <div class="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
-                    <div
-                      class="h-full transition-all duration-500 ease-out rounded-full"
+            <div class="mb-6">
+              <UFormGroup label="密码" :error="errors.password" required>
+                <UInput
+                  v-model="form.password"
+                  type="password"
+                  placeholder="至少 6 个字符"
+                  size="xl"
+                  icon="i-mdi-lock"
+                  :disabled="loading"
+                  @input="errors.password = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]"
+                />
+                <!-- 密码强度指示器 - 增强版 -->
+                <div v-if="form.password" class="mt-3 space-y-2">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                      <div
+                        class="h-full transition-all duration-500 ease-out rounded-full"
+                        :class="{
+                          'bg-gradient-to-r from-red-500 to-red-600': passwordStrength.color === 'red',
+                          'bg-gradient-to-r from-yellow-400 to-yellow-500': passwordStrength.color === 'yellow',
+                          'bg-gradient-to-r from-green-500 to-green-600': passwordStrength.color === 'green',
+                        }"
+                        :style="{ width: `${(passwordStrength.level / 3) * 100}%` }"
+                      />
+                    </div>
+                    <span
+                      class="text-sm font-bold min-w-[3rem] text-right"
                       :class="{
-                        'bg-gradient-to-r from-red-500 to-red-600': passwordStrength.color === 'red',
-                        'bg-gradient-to-r from-yellow-400 to-yellow-500': passwordStrength.color === 'yellow',
-                        'bg-gradient-to-r from-green-500 to-green-600': passwordStrength.color === 'green',
+                        'text-red-500': passwordStrength.color === 'red',
+                        'text-yellow-500': passwordStrength.color === 'yellow',
+                        'text-green-500': passwordStrength.color === 'green',
                       }"
-                      :style="{ width: `${(passwordStrength.level / 3) * 100}%` }"
-                    />
+                    >
+                      {{ passwordStrength.text }}
+                    </span>
                   </div>
-                  <span
-                    class="text-sm font-bold min-w-[3rem] text-right"
-                    :class="{
-                      'text-red-500': passwordStrength.color === 'red',
-                      'text-yellow-500': passwordStrength.color === 'yellow',
-                      'text-green-500': passwordStrength.color === 'green',
-                    }"
-                  >
-                    {{ passwordStrength.text }}
-                  </span>
-                </div>
-                <!-- 密码要求提示 -->
-                <div class="text-xs space-y-1 text-gray-600 dark:text-gray-400">
-                  <div class="flex items-center gap-2">
-                    <UIcon 
-                      :name="form.password.length >= 8 ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
-                      :class="form.password.length >= 8 ? 'text-green-500' : 'text-gray-400'"
-                    />
-                    <span>至少 8 个字符</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <UIcon 
-                      :name="/\d/.test(form.password) ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
-                      :class="/\d/.test(form.password) ? 'text-green-500' : 'text-gray-400'"
-                    />
-                    <span>包含数字</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <UIcon 
-                      :name="/[A-Z]/.test(form.password) ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
-                      :class="/[A-Z]/.test(form.password) ? 'text-green-500' : 'text-gray-400'"
-                    />
-                    <span>包含大写字母</span>
+                  <!-- 密码要求提示 -->
+                  <div class="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center gap-2">
+                      <UIcon 
+                        :name="form.password.length >= 8 ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
+                        :class="form.password.length >= 8 ? 'text-green-500' : 'text-gray-400'"
+                      />
+                      <span>至少 8 个字符</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <UIcon 
+                        :name="/\d/.test(form.password) ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
+                        :class="/\d/.test(form.password) ? 'text-green-500' : 'text-gray-400'"
+                      />
+                      <span>包含数字</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <UIcon 
+                        :name="/[A-Z]/.test(form.password) ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'" 
+                        :class="/[A-Z]/.test(form.password) ? 'text-green-500' : 'text-gray-400'"
+                      />
+                      <span>包含大写字母</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </UFormGroup>
+              </UFormGroup>
+            </div>
 
             <!-- 确认密码输入 -->
-            <UFormGroup label="确认密码" :error="errors.confirmPassword" required>
-              <UInput
-                v-model="form.confirmPassword"
-                type="password"
-                placeholder="再次输入密码"
-                size="xl"
-                icon="i-mdi-lock-check"
-                :disabled="loading"
-                @input="errors.confirmPassword = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              >
-                <template v-if="form.confirmPassword && form.password === form.confirmPassword" #trailing>
-                  <UIcon name="i-mdi-check-circle" class="text-green-500" />
-                </template>
-              </UInput>
-            </UFormGroup>
+            <div class="mb-6">
+              <UFormGroup label="确认密码" :error="errors.confirmPassword" required>
+                <UInput
+                  v-model="form.confirmPassword"
+                  type="password"
+                  placeholder="再次输入密码"
+                  size="xl"
+                  icon="i-mdi-lock-check"
+                  :disabled="loading"
+                  @input="errors.confirmPassword = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]"
+                >
+                  <template v-if="form.confirmPassword && form.password === form.confirmPassword" #trailing>
+                    <UIcon name="i-mdi-check-circle" class="text-green-500" />
+                  </template>
+                </UInput>
+              </UFormGroup>
+            </div>
 
             <!-- 同意条款 -->
-            <div class="space-y-2 pt-2">
+            <div class="space-y-2 pt-2 mb-6">
               <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
                 <UCheckbox
                   v-model="agreeTerms"
@@ -325,25 +333,27 @@ const handleRegister = async () => {
             </div>
 
             <!-- 注册按钮 -->
-            <UButton
-              type="submit"
-              size="xl"
-              block
-              :loading="loading"
-              :disabled="loading"
-              class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 mt-6 font-bold"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <UIcon v-if="!loading" name="i-mdi-rocket-launch" />
-                <span>{{ loading ? '注册中...' : '立即注册' }}</span>
-              </span>
-            </UButton>
+            <div class="pt-2">
+              <UButton
+                type="submit"
+                size="xl"
+                block
+                :loading="loading"
+                :disabled="loading"
+                class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 font-bold"
+              >
+                <span class="flex items-center justify-center gap-2">
+                  <UIcon v-if="!loading" name="i-mdi-rocket-launch" />
+                  <span>{{ loading ? '注册中...' : '立即注册' }}</span>
+                </span>
+              </UButton>
+            </div>
           </form>
         </UCard>
 
         <!-- 登录链接 -->
         <div class="mt-8 text-center animate-fade-in-delayed">
-          <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border border-primary-200 dark:border-primary-700">
+          <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border dark:border-primary-700">
             <span class="text-secondary-600 dark:text-secondary-300">已经有账户了？</span>
             <UButton
               variant="link"
@@ -357,7 +367,7 @@ const handleRegister = async () => {
 
         <!-- 返回首页 -->
         <div class="mt-6 text-center animate-fade-in-delayed">
-          <UButton variant="link" color="gray" to="/" icon="i-mdi-arrow-left" size="lg" class="text-secondary-600 dark:text-secondary-300">
+          <UButton variant="link" color="neutral" to="/" icon="i-mdi-arrow-left" size="lg" class="text-secondary-600 dark:text-secondary-300">
             返回首页
           </UButton>
         </div>

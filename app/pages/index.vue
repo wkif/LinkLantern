@@ -489,63 +489,6 @@ const handlePublicLinkClick = (link: any) => {
           </div>
         </div>
 
-        <!-- 特性展示 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
-          <UCard>
-            <template #header>
-              <div class="flex items-center gap-3">
-                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <UIcon name="i-mdi-bookmark-multiple" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 class="text-lg font-semibold">链接收藏</h3>
-              </div>
-            </template>
-            <p class="text-gray-600 dark:text-gray-400">
-              轻松保存和管理您常用的网站链接，支持分类和搜索功能
-            </p>
-          </UCard>
-
-          <UCard>
-            <template #header>
-              <div class="flex items-center gap-3">
-                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <UIcon name="i-mdi-chart-line" class="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <h3 class="text-lg font-semibold">访问统计</h3>
-              </div>
-            </template>
-            <p class="text-gray-600 dark:text-gray-400">
-              记录链接点击次数，了解您最常访问的网站
-            </p>
-          </UCard>
-
-          <UCard>
-            <template #header>
-              <div class="flex items-center gap-3">
-                <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <UIcon name="i-mdi-shield-check" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 class="text-lg font-semibold">安全可靠</h3>
-              </div>
-            </template>
-            <p class="text-gray-600 dark:text-gray-400">
-              完善的用户认证系统，您的数据安全有保障
-            </p>
-          </UCard>
-        </div>
-
-        <!-- 技术栈展示 -->
-        <div class="text-center">
-          <h3 class="text-2xl font-bold mb-6">技术栈</h3>
-          <div class="flex flex-wrap items-center justify-center gap-4">
-            <UBadge color="success" variant="subtle" size="lg">Nuxt 4</UBadge>
-            <UBadge color="info" variant="subtle" size="lg">Vue 3</UBadge>
-            <UBadge color="primary" variant="subtle" size="lg">TypeScript</UBadge>
-            <UBadge color="secondary" variant="subtle" size="lg">Prisma</UBadge>
-            <UBadge color="warning" variant="subtle" size="lg">MySQL</UBadge>
-            <UBadge color="neutral" variant="subtle" size="lg">Nuxt UI</UBadge>
-          </div>
-        </div>
       </div>
 
       <!-- 网页推荐部分（所有用户都可见） -->
@@ -666,12 +609,6 @@ const handlePublicLinkClick = (link: any) => {
           </UCard>
         </div>
 
-        <!-- 提示信息 -->
-        <div v-if="publicLinks.length > 0" class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-          <p class="text-sm text-blue-700 dark:text-blue-300">
-            💡 提示：登录后可以在"管理后台"中将您的链接设置为公开，与大家分享优质内容
-          </p>
-        </div>
       </div>
     </main>
 
@@ -679,10 +616,9 @@ const handlePublicLinkClick = (link: any) => {
     <footer class="border-t border-gray-200 dark:border-gray-800 mt-16">
       <div class="container mx-auto px-4 py-8">
         <div class="text-center text-gray-600 dark:text-gray-400">
-          <p>使用 ❤️ 和 Nuxt 4 构建</p>
-          <p class="mt-2 text-sm">
+          <a class="mt-2 text-sm" href="https://github.com/wkif/LinkLantern" target="_blank">
             LinkLantern © {{ new Date().getFullYear() }}
-          </p>
+          </a>
         </div>
     </div>
     </footer>
@@ -804,9 +740,6 @@ const handlePublicLinkClick = (link: any) => {
 
                   <!-- 深色模式切换 -->
                   <div class="flex items-center justify-between px-3 py-2">
-                    <span class="text-sm text-secondary-700 dark:text-secondary-300 font-medium">
-                      深色模式
-                    </span>
                     <ColorModeToggle />
                   </div>
 

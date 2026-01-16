@@ -31,7 +31,7 @@ const validateEmail = (email: string) => {
 // 验证表单
 const validate = () => {
   let isValid = true
-  
+
   // 验证邮箱
   if (!form.email) {
     errors.email = '请输入邮箱'
@@ -42,7 +42,7 @@ const validate = () => {
   } else {
     errors.email = ''
   }
-  
+
   // 验证密码
   if (!form.password) {
     errors.password = '请输入密码'
@@ -53,19 +53,19 @@ const validate = () => {
   } else {
     errors.password = ''
   }
-  
+
   return isValid
 }
 
 // 处理登录
 const handleLogin = async () => {
   if (!validate()) return
-  
+
   const result = await login({
     email: form.email,
     password: form.password,
   })
-  
+
   if (result?.success) {
     toast.add({
       title: '登录成功',
@@ -87,11 +87,18 @@ const handleLogin = async () => {
 <template>
   <div class="min-h-screen relative overflow-hidden">
     <!-- 背景装饰 -->
-    <div class="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-primary-950 dark:via-secondary-900 dark:to-primary-900">
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-primary-950 dark:via-secondary-900 dark:to-primary-900">
       <!-- 装饰性圆形 -->
-      <div class="absolute top-0 left-0 w-96 h-96 bg-primary-200/30 dark:bg-primary-800/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div class="absolute bottom-0 right-0 w-96 h-96 bg-accent-200/40 dark:bg-accent-900/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-      <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-secondary-200/20 dark:bg-secondary-800/20 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div
+        class="absolute top-0 left-0 w-96 h-96 bg-primary-200/30 dark:bg-primary-800/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2">
+      </div>
+      <div
+        class="absolute bottom-0 right-0 w-96 h-96 bg-accent-200/40 dark:bg-accent-900/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2">
+      </div>
+      <div
+        class="absolute top-1/2 left-1/2 w-72 h-72 bg-secondary-200/20 dark:bg-secondary-800/20 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2">
+      </div>
     </div>
 
     <!-- 内容区域 -->
@@ -100,7 +107,8 @@ const handleLogin = async () => {
         <!-- Logo 和标题 -->
         <div class="text-center mb-8 animate-fade-in">
           <div class="inline-block mb-4">
-            <div class="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-5xl mb-2 animate-bounce-slow shadow-xl">
+            <div
+              class="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-5xl mb-2 animate-bounce-slow shadow-xl">
               🏮
             </div>
           </div>
@@ -111,45 +119,36 @@ const handleLogin = async () => {
         </div>
 
         <!-- 登录表单卡片 -->
-        <UCard class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2 border-primary-200 dark:border-primary-700 animate-slide-up">
+        <UCard
+          class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2   dark:border-primary-700 animate-slide-up">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-primary-700 dark:text-primary-300">登录</h2>
+              <h2 class="text-xl font-semibold dark:text-primary-300">登录</h2>
               <UIcon name="i-mdi-login" class="text-2xl text-accent-500" />
             </div>
           </template>
 
           <form @submit.prevent="handleLogin" class="space-y-6">
             <!-- 邮箱输入 -->
-            <UFormGroup label="邮箱地址" :error="errors.email">
-              <UInput
-                v-model="form.email"
-                type="email"
-                placeholder="your@email.com"
-                size="xl"
-                icon="i-mdi-email"
-                :disabled="loading"
-                @input="errors.email = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              />
-            </UFormGroup>
+            <div class="mb-6">
+              <UFormGroup label="邮箱地址" :error="errors.email">
+                <UInput v-model="form.email" type="email" placeholder="your@email.com" size="xl" icon="i-mdi-email"
+                  :disabled="loading" @input="errors.email = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]" />
+              </UFormGroup>
+            </div>
 
             <!-- 密码输入 -->
-            <UFormGroup label="密码" :error="errors.password">
-              <UInput
-                v-model="form.password"
-                type="password"
-                placeholder="••••••••"
-                size="xl"
-                icon="i-mdi-lock"
-                :disabled="loading"
-                @input="errors.password = ''"
-                class="transition-all duration-300 focus:scale-[1.01]"
-              />
-            </UFormGroup>
+            <div class="mb-6">
+              <UFormGroup label="密码" :error="errors.password">
+                <UInput v-model="form.password" type="password" placeholder="••••••••" size="xl" icon="i-mdi-lock"
+                  :disabled="loading" @input="errors.password = ''"
+                  class="transition-all duration-300 focus:scale-[1.01]" />
+              </UFormGroup>
+            </div>
 
             <!-- 记住密码和忘记密码 -->
-            <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center justify-between text-sm mb-6">
               <UCheckbox v-model="rememberMe" label="记住我" class="select-none" />
               <UButton variant="link" color="primary" size="sm" disabled class="font-medium">
                 忘记密码？
@@ -157,31 +156,25 @@ const handleLogin = async () => {
             </div>
 
             <!-- 登录按钮 -->
-            <UButton
-              type="submit"
-              size="xl"
-              block
-              :loading="loading"
-              :disabled="loading"
-              class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 font-bold"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <UIcon v-if="!loading" name="i-mdi-login" />
-                <span>{{ loading ? '登录中...' : '立即登录' }}</span>
-              </span>
-            </UButton>
+            <div class="pt-2">
+              <UButton type="submit" size="xl" block :loading="loading" :disabled="loading"
+                class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 font-bold">
+                <span class="flex items-center justify-center gap-2">
+                  <UIcon v-if="!loading" name="i-mdi-login" />
+                  <span>{{ loading ? '登录中...' : '立即登录' }}</span>
+                </span>
+              </UButton>
+            </div>
           </form>
         </UCard>
 
         <!-- 注册链接 -->
         <div class="mt-8 text-center animate-fade-in-delayed">
-          <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border border-primary-200 dark:border-primary-700">
+          <div
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border   dark:border-primary-700">
             <span class="text-secondary-600 dark:text-secondary-300">还没有账户？</span>
-            <UButton
-              variant="link"
-              to="/register"
-              class="font-semibold text-primary-600 dark:text-accent-400 hover:text-accent-500"
-            >
+            <UButton variant="link" to="/register"
+              class="font-semibold text-primary-600 dark:text-accent-400 hover:text-accent-500">
               立即注册 →
             </UButton>
           </div>
@@ -189,7 +182,8 @@ const handleLogin = async () => {
 
         <!-- 返回首页 -->
         <div class="mt-6 text-center animate-fade-in-delayed">
-          <UButton variant="link" color="gray" to="/" icon="i-mdi-arrow-left" size="lg" class="text-secondary-600 dark:text-secondary-300">
+          <UButton variant="link" color="neutral" to="/" icon="i-mdi-arrow-left" size="lg"
+            class="text-secondary-600 dark:text-secondary-300">
             返回首页
           </UButton>
         </div>
@@ -205,6 +199,7 @@ const handleLogin = async () => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -216,6 +211,7 @@ const handleLogin = async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -223,9 +219,12 @@ const handleLogin = async () => {
 }
 
 @keyframes bounce-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -247,4 +246,3 @@ const handleLogin = async () => {
   animation: bounce-slow 3s ease-in-out infinite;
 }
 </style>
-
