@@ -162,7 +162,20 @@ export const useAuth = () => {
    * 当 access token 过期时，使用 refresh token 获取新的 token
    */
   const refreshAccessToken = async (): Promise<boolean> => {
-    if (!refreshToken.value) {
+    // 尝试从 state 或 localStorage 获取 refresh token
+    let token = refreshToken.value
+    
+    // 如果 state 中没有，但 localStorage 有（可能是初始化时机问题）
+    if (!token && process.client) {
+      token = localStorage.getItem('refreshToken')
+      if (token) {
+        console.log('[Auth] Refresh token not in state yet, using localStorage token')
+        // 同步到 state
+        refreshToken.value = token
+      }
+    }
+    
+    if (!token) {
       console.log('[Auth] No refresh token available')
       return false
     }
@@ -172,7 +185,7 @@ export const useAuth = () => {
       const response = await $fetch<any>('/api/auth/refresh', {
         method: 'POST',
         body: {
-          refreshToken: refreshToken.value,
+          refreshToken: token,
         },
       })
 
@@ -211,8 +224,21 @@ export const useAuth = () => {
    * 如果 access token 过期，会自动尝试刷新
    */
   const fetchCurrentUser = async () => {
-    if (!accessToken.value) {
-      console.log('[Auth] No token, skipping fetch')
+    // 尝试从 state 或 localStorage 获取 token
+    let token = accessToken.value
+    
+    // 如果 state 中没有，但 localStorage 有（可能是初始化时机问题）
+    if (!token && process.client) {
+      token = localStorage.getItem('accessToken')
+      if (token) {
+        console.log('[Auth] Token not in state yet, using localStorage token')
+        // 同步到 state
+        accessToken.value = token
+      }
+    }
+    
+    if (!token) {
+      console.log('[Auth] No token available, skipping fetch')
       return
     }
 
@@ -220,7 +246,7 @@ export const useAuth = () => {
       console.log('[Auth] Fetching current user...')
       const response = await $fetch<any>('/api/auth/me', {
         headers: {
-          Authorization: `Bearer ${accessToken.value}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 

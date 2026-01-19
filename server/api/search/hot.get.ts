@@ -70,13 +70,7 @@ export default defineEventHandler(async (event) => {
     // 降级方案：返回默认热门搜索
     return {
       success: true,
-      data: [
-        'Vue 3 教程',
-        'Nuxt 4 文档',
-        'TypeScript 学习',
-        'Tailwind CSS',
-        'GitHub 热门项目',
-      ],
+      data: [],
     }
   }
 })
