@@ -55,8 +55,8 @@ const suggestions = computed(() => {
   )
 })
 
-// Tab 状态管理
-const activeTab = ref<'links' | 'hotboard'>(isLoggedIn.value ? 'links' : 'hotboard')
+// Tab 状态管理（默认显示热榜，避免 hydration mismatch）
+const activeTab = ref<'links' | 'hotboard'>('hotboard')
 const currentHotboardType = ref('weibo')
 
 // 切换 Tab
@@ -198,9 +198,11 @@ const handleLogout = () => {
 }
 
 
-// 加载链接数据
+// 客户端初始化：加载数据并根据登录状态切换 Tab
 onMounted(() => {
+  // 如果已登录，切换到我的链接并加载数据
   if (isLoggedIn.value) {
+    activeTab.value = 'links'
     fetchLinks({ all: true })  // 首页获取全部数据，用于搜索建议
   }
   // 加载公开链接推荐（所有用户都可以看）

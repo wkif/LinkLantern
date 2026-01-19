@@ -35,7 +35,14 @@ export const useAuth = () => {
   const user = useState<User | null>('auth:user', () => {
     if (process.client) {
       const stored = localStorage.getItem('user')
-      return stored ? JSON.parse(stored) : null
+      if (stored) {
+        try {
+          return JSON.parse(stored)
+        } catch (e) {
+          console.error('[Auth] Failed to parse stored user:', e)
+          localStorage.removeItem('user')
+        }
+      }
     }
     return null
   })
@@ -55,42 +62,9 @@ export const useAuth = () => {
     return null
   })
 
-  // 在客户端启动时，确保从 localStorage 同步状态
-  if (process.client && !user.value && !accessToken.value) {
-    const storedToken = localStorage.getItem('accessToken')
-    const storedUser = localStorage.getItem('user')
-    const storedRefreshToken = localStorage.getItem('refreshToken')
-    
-    if (storedToken) {
-      accessToken.value = storedToken
-      console.log('[Auth] Restored access token from localStorage')
-    }
-    
-    if (storedUser) {
-      try {
-        user.value = JSON.parse(storedUser)
-        console.log('[Auth] Restored user from localStorage:', user.value?.email)
-      } catch (e) {
-        console.error('[Auth] Failed to parse stored user:', e)
-        localStorage.removeItem('user') // 清除损坏的数据
-      }
-    }
-    
-    if (storedRefreshToken) {
-      refreshToken.value = storedRefreshToken
-    }
-  }
-
   // 是否已登录
   const isLoggedIn = computed(() => {
-    const loggedIn = !!accessToken.value && !!user.value
-    if (process.client) {
-      console.log('[Auth] Login status:', loggedIn, { 
-        hasToken: !!accessToken.value, 
-        hasUser: !!user.value 
-      })
-    }
-    return loggedIn
+    return !!accessToken.value && !!user.value
   })
 
   // 加载状态
@@ -184,12 +158,66 @@ export const useAuth = () => {
   }
 
   /**
-   * 获取当前用户信息（从服务器刷新）
+   * 刷新访问令牌
+   * 当 access token 过期时，使用 refresh token 获取新的 token
    */
-  const fetchCurrentUser = async () => {
-    if (!accessToken.value) return
+  const refreshAccessToken = async (): Promise<boolean> => {
+    if (!refreshToken.value) {
+      console.log('[Auth] No refresh token available')
+      return false
+    }
 
     try {
+      console.log('[Auth] Refreshing access token...')
+      const response = await $fetch<any>('/api/auth/refresh', {
+        method: 'POST',
+        body: {
+          refreshToken: refreshToken.value,
+        },
+      })
+
+      if (response.success) {
+        // 保存新的 token
+        accessToken.value = response.data.tokens.accessToken
+        refreshToken.value = response.data.tokens.refreshToken
+        if (process.client) {
+          localStorage.setItem('accessToken', response.data.tokens.accessToken)
+          localStorage.setItem('refreshToken', response.data.tokens.refreshToken)
+        }
+
+        // 更新用户信息
+        user.value = response.data.user
+        if (process.client) {
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+        }
+
+        console.log('[Auth] Token refreshed successfully')
+        return true
+      }
+      return false
+    } catch (error: any) {
+      console.error('[Auth] Failed to refresh token:', error.statusCode || error.message)
+      // Refresh token 也过期了，清除登录状态
+      if (error.statusCode === 401) {
+        console.log('[Auth] Refresh token expired, clearing auth state')
+        logout()
+      }
+      return false
+    }
+  }
+
+  /**
+   * 获取当前用户信息（从服务器刷新）
+   * 如果 access token 过期，会自动尝试刷新
+   */
+  const fetchCurrentUser = async () => {
+    if (!accessToken.value) {
+      console.log('[Auth] No token, skipping fetch')
+      return
+    }
+
+    try {
+      console.log('[Auth] Fetching current user...')
       const response = await $fetch<any>('/api/auth/me', {
         headers: {
           Authorization: `Bearer ${accessToken.value}`,
@@ -198,12 +226,45 @@ export const useAuth = () => {
 
       if (response.success) {
         user.value = response.data
-        localStorage.setItem('user', JSON.stringify(response.data))
+        if (process.client) {
+          localStorage.setItem('user', JSON.stringify(response.data))
+        }
+        console.log('[Auth] User info refreshed:', response.data.email)
       }
-    } catch (error) {
-      console.error('获取用户信息失败:', error)
-      // Token 可能已过期，清除登录状态
-      logout()
+    } catch (error: any) {
+      console.error('[Auth] Failed to fetch user info:', error.statusCode || error.message)
+      
+      // 如果是 401 错误，尝试刷新 token
+      if (error.statusCode === 401) {
+        console.log('[Auth] Access token expired, attempting to refresh...')
+        const refreshed = await refreshAccessToken()
+        
+        if (refreshed) {
+          // Token 刷新成功，重试获取用户信息
+          console.log('[Auth] Retrying fetch user after token refresh...')
+          try {
+            const retryResponse = await $fetch<any>('/api/auth/me', {
+              headers: {
+                Authorization: `Bearer ${accessToken.value}`,
+              },
+            })
+            
+            if (retryResponse.success) {
+              user.value = retryResponse.data
+              if (process.client) {
+                localStorage.setItem('user', JSON.stringify(retryResponse.data))
+              }
+              console.log('[Auth] User info fetched after refresh:', retryResponse.data.email)
+            }
+          } catch (retryError) {
+            console.error('[Auth] Failed to fetch user after refresh:', retryError)
+            logout()
+          }
+        } else {
+          // Token 刷新失败，已经在 refreshAccessToken 中清除了状态
+          console.log('[Auth] Failed to refresh token, user logged out')
+        }
+      }
     }
   }
 
@@ -243,6 +304,7 @@ export const useAuth = () => {
     // 状态
     user: readonly(user),
     accessToken: readonly(accessToken),
+    refreshToken: readonly(refreshToken),
     isLoggedIn,
     loading: readonly(loading),
 
@@ -252,6 +314,7 @@ export const useAuth = () => {
     logout,
     fetchCurrentUser,
     refreshUserInfo: fetchCurrentUser, // 别名
+    refreshAccessToken,
     updateProfile,
   }
 }

@@ -5,17 +5,17 @@
 
 export default defineNuxtPlugin(() => {
   if (process.client) {
-    const { fetchCurrentUser } = useAuth()
+    const { fetchCurrentUser, isLoggedIn } = useAuth()
     
-    // 从 localStorage 检查是否有 token
-    const token = localStorage.getItem('accessToken')
-    
-    // 如果有 token，尝试获取用户信息
-    if (token) {
+    // 如果有登录状态，静默验证 Token
+    if (isLoggedIn.value) {
+      console.log('[Auth Plugin] Validating stored token...')
       // 使用 nextTick 确保在组件挂载后执行
-      nextTick(() => {
-        fetchCurrentUser()
+      nextTick(async () => {
+        await fetchCurrentUser()
       })
+    } else {
+      console.log('[Auth Plugin] No stored auth state')
     }
   }
 })
