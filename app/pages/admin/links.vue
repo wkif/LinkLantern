@@ -429,7 +429,6 @@ const formatDate = (date: string) => {
 
         <UButton
           :icon="sortOrder === 'asc' ? 'i-mdi-sort-ascending' : 'i-mdi-sort-descending'"
-          variant="ghost"
           size="sm"
           @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
         >
@@ -783,7 +782,7 @@ const formatDate = (date: string) => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="ghost" @click="showAddModal = false">
+          <UButton @click="showAddModal = false">
             取消
           </UButton>
           <UButton color="primary" icon="i-mdi-check" :loading="saving" :disabled="saving" @click="handleAdd">
@@ -972,7 +971,7 @@ const formatDate = (date: string) => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="ghost" @click="showEditModal = false">
+          <UButton @click="showEditModal = false">
             取消
           </UButton>
           <UButton color="primary" icon="i-mdi-content-save" :loading="saving" :disabled="saving" @click="handleUpdate">
@@ -998,7 +997,7 @@ const formatDate = (date: string) => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="ghost" @click="showDeleteModal = false">
+          <UButton @click="showDeleteModal = false">
             取消
           </UButton>
           <UButton color="error" :loading="deleting" :disabled="deleting" @click="handleDelete">

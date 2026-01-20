@@ -47,7 +47,7 @@
             </p>
           </div>
         </div>
-        <UButton size="sm" variant="ghost" @click="handleRefresh">
+        <UButton size="sm" @click="handleRefresh">
           <template #leading>
             <UIcon name="i-mdi-refresh" />
           </template>

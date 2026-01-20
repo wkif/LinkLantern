@@ -224,7 +224,6 @@ const handleFileSelect = async (event: Event) => {
               :loading="importing"
               :disabled="importing"
               color="primary"
-            variant="outline"
               icon="i-mdi-upload"
             >
             选择文件导入

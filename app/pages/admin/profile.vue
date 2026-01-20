@@ -309,7 +309,6 @@ const formatDate = (date: string) => {
             <div class="flex justify-end gap-2 pt-4">
               <UButton
                 type="button"
-                variant="ghost"
                 @click="cancelEdit"
               >
                 取消
