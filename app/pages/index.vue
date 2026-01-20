@@ -4,6 +4,7 @@ import { useThrottleFn } from '@vueuse/core'
 const { isLoggedIn, user, logout } = useAuth()
 const { links, fetchLinks, recordClick, publicLinks, loadingPublic, fetchPublicLinks } = useLinks()
 const { searchHistory, addToHistory, clearHistory, removeFromHistory, getSuggestions, fetchEngineSuggestions } = useSearch()
+const { saying, loading: loadingSaying, fetchSaying } = useSaying()
 const router = useRouter()
 const toast = useToast()
 
@@ -216,6 +217,8 @@ onMounted(() => {
   }
   // 加载公开链接推荐（所有用户都可以看）
   fetchPublicLinks({ sort: 'popular', limit: 12 })
+  // 获取一言
+  fetchSaying()
 })
 
 // 监听登录状态变化
@@ -456,6 +459,31 @@ const handlePublicLinkClick = (link: any) => {
               </div>
             </div>
           </form>
+        </div>
+
+        <!-- 一言 -->
+        <div 
+          v-if="saying || loadingSaying"
+          class="mt-6 text-center animate-fade-in animate-delay-300"
+        >
+          <!-- 加载状态 -->
+          <div v-if="loadingSaying && !saying" class="text-gray-500 dark:text-gray-400">
+            <UIcon name="i-mdi-loading" class="animate-spin text-2xl" />
+          </div>
+          
+          <!-- 一言内容 - 使用 TextType 组件 -->
+          <TextType
+            v-else-if="saying"
+            :key="saying"
+            :text="saying"
+            :loop="false"
+            :typing-speed="80"
+            :show-cursor="true"
+            :cursor-character="'|'"
+            :cursor-blink-duration="0.5"
+            class-name="text-lg md:text-xl leading-relaxed font-serif italic px-4 text-gray-800 dark:text-gray-100"
+            cursor-class-name="text-primary-600 dark:text-primary-400"
+          />
         </div>
       </div>
 

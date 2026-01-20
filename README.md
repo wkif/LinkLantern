@@ -20,6 +20,7 @@
 - 📄 **分页查询** - 服务端分页，支持大量数据高效管理
 - 🔍 **智能搜索** - 多搜索引擎支持，实时搜索建议，API 集成
 - 🔥 **热点榜单** - 实时热榜聚合，支持微博、知乎、B站、掘金等 50+ 平台
+- 💬 **每日一言** - 随机诗词、名言和动漫台词，每日惊喜
 - ⭐ **网页推荐** - 发现和分享优质链接，社区内容共享
 - 🎛️ **管理后台** - 完整的后台管理系统，数据可视化
 - 🔐 **用户认证** - JWT 认证，访问/刷新令牌机制
@@ -164,6 +165,9 @@ pnpm prisma:generate
 
 **热点榜单：**
 - `GET http://localhost:3000/api/hotboard?type=weibo` - 获取指定平台热榜数据（无需认证）
+
+**每日一言：**
+- `GET http://localhost:3000/api/saying` - 获取随机一言（无需认证）
 
 📖 详细的 API 使用说明请查看：
 - [认证功能文档](./docs/AUTH_GUIDE.md)
@@ -578,6 +582,7 @@ DATABASE_URL="file:./dev.db"
 - [📄 分页功能说明](./docs/PAGINATION_FEATURE.md) - 分页实现原理与使用
 - [🔍 搜索功能文档](./docs/SEARCH_SUGGESTIONS.md) - 智能搜索实现
 - [🔥 搜索引擎 API](./docs/SEARCH_ENGINE_API.md) - 外部 API 集成
+- [💬 每日一言功能](./docs/SAYING_FEATURE.md) - 随机语录展示 ✨ 新增
 - [⭐ 网页推荐功能](./docs/PUBLIC_LINKS_FEATURE.md) - 公开分享机制
 - [🎛️ 管理后台指南](./docs/ADMIN_GUIDE.md) - 完整的后台管理系统
 - [💾 数据导入导出](./docs/IMPORT_EXPORT_GUIDE.md) - 备份和迁移数据
