@@ -1,6 +1,6 @@
 /**
- * 获取当前登录用户信息 API
- * GET /api/auth/me
+ * 获取用户首页背景 API
+ * GET /api/auth/background
  * 
  * 需要在请求头中携带 JWT 令牌：
  * Authorization: Bearer <token>
@@ -13,37 +13,30 @@ export default defineEventHandler(async (event) => {
   try {
     // 验证用户身份
     const authUser = await requireAuth(event)
-    
-    // 获取完整的用户信息
+
+    // 获取用户背景
     const user = await prisma.user.findUnique({
       where: { id: authUser.userId },
       select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
         homeBackground: true,
         useBingWallpaper: true,
         backgroundOpacity: true,
         backgroundBlur: true,
-        isActive: true,
-        emailVerified: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
       },
     })
-    
+
     if (!user) {
       throw createError({
         statusCode: 404,
         statusMessage: '用户不存在',
       })
     }
-    
+
     return {
       success: true,
-      data: user,
+      data: {
+        background: user.homeBackground,
+      },
     }
   } catch (error: any) {
     // 如果是已经创建的错误，直接抛出
@@ -52,11 +45,10 @@ export default defineEventHandler(async (event) => {
     }
     
     // 其他错误
-    console.error('获取用户信息错误:', error)
+    console.error('获取背景错误:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: '获取用户信息失败',
+      statusMessage: '获取背景失败',
     })
   }
 })
-

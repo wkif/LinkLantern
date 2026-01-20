@@ -1,9 +1,14 @@
 /**
- * 获取当前登录用户信息 API
- * GET /api/auth/me
+ * 切换必应壁纸设置 API
+ * PUT /api/auth/bing-wallpaper
  * 
  * 需要在请求头中携带 JWT 令牌：
  * Authorization: Bearer <token>
+ * 
+ * 请求体：
+ * {
+ *   enabled: boolean  // 是否启用必应壁纸
+ * }
  */
 
 import prisma from '../../utils/prisma'
@@ -14,9 +19,26 @@ export default defineEventHandler(async (event) => {
     // 验证用户身份
     const authUser = await requireAuth(event)
     
-    // 获取完整的用户信息
-    const user = await prisma.user.findUnique({
+    // 获取请求体数据
+    const body = await readBody(event)
+    const { enabled } = body
+
+    // 验证数据
+    if (typeof enabled !== 'boolean') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: '请提供有效的开关状态',
+      })
+    }
+
+    // 更新用户设置
+    const updatedUser = await prisma.user.update({
       where: { id: authUser.userId },
+      data: {
+        useBingWallpaper: enabled,
+        // 如果启用必应壁纸，清除自定义背景
+        ...(enabled && { homeBackground: null }),
+      },
       select: {
         id: true,
         email: true,
@@ -33,17 +55,13 @@ export default defineEventHandler(async (event) => {
         updatedAt: true,
       },
     })
-    
-    if (!user) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: '用户不存在',
-      })
-    }
-    
+
     return {
       success: true,
-      data: user,
+      message: enabled ? '已启用必应壁纸' : '已关闭必应壁纸',
+      data: {
+        user: updatedUser,
+      },
     }
   } catch (error: any) {
     // 如果是已经创建的错误，直接抛出
@@ -52,10 +70,10 @@ export default defineEventHandler(async (event) => {
     }
     
     // 其他错误
-    console.error('获取用户信息错误:', error)
+    console.error('更新必应壁纸设置错误:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: '获取用户信息失败',
+      statusMessage: '更新设置失败',
     })
   }
 })

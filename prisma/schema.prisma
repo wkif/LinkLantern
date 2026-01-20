@@ -13,19 +13,23 @@ datasource db {
 
 // 用户模型 - 包含基本认证功能
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique @db.VarChar(255)
-  password      String    @db.VarChar(255)              // 加密后的密码
-  name          String?   @db.VarChar(255)
-  avatar        String?   @db.VarChar(500)              // 头像 URL
-  isActive      Boolean   @default(true)                // 账户是否激活
-  emailVerified Boolean   @default(false)               // 邮箱是否验证
-  lastLoginAt   DateTime?                               // 最后登录时间
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    Int       @id @default(autoincrement())
+  email                 String    @unique @db.VarChar(255)
+  password              String    @db.VarChar(255)              // 加密后的密码
+  name                  String?   @db.VarChar(255)
+  avatar                String?   @db.VarChar(500)              // 头像 URL
+  homeBackground        String?   @db.LongText                  // 首页背景图片（base64）
+  useBingWallpaper      Boolean   @default(false)               // 是否启用必应壁纸
+  backgroundOpacity     Int       @default(80)                  // 背景遮罩透明度 (0-100)
+  backgroundBlur        Int       @default(8)                   // 背景模糊度 (0-20)
+  isActive              Boolean   @default(true)                // 账户是否激活
+  emailVerified         Boolean   @default(false)               // 邮箱是否验证
+  lastLoginAt           DateTime?                               // 最后登录时间
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
   
   // 关联：用户可以有多个收藏链接
-  links         Link[]
+  links                 Link[]
 
   @@index([email])
 }

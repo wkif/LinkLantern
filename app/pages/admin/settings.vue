@@ -105,13 +105,13 @@ const handleFileSelect = async (event: Event) => {
     // 调用 composable 方法导入
     const result = await importLinksAPI({
       links: data.links,
-      mode: importMode.value,
+      mode: importMode.value
     })
     
     if (result.success) {
       toast.add({
-        title: '导入完成',
-        description: result.message || '数据导入成功',
+        title: '导入成功',
+        description: result.message,
         color: 'success',
         icon: 'i-mdi-check-circle',
       })
@@ -149,6 +149,9 @@ const handleFileSelect = async (event: Event) => {
       </p>
     </div>
 
+    <!-- 首页背景设置组件 -->
+    <BackgroundSettings class="mb-6" />
+
     <!-- 数据管理 -->
     <UCard class="mb-6">
       <template #header>
@@ -175,7 +178,7 @@ const handleFileSelect = async (event: Event) => {
             color="primary"
             icon="i-mdi-download"
           >
-            {{ exporting ? '导出中...' : '导出链接数据' }}
+            导出链接数据
           </UButton>
         </div>
 
@@ -192,66 +195,40 @@ const handleFileSelect = async (event: Event) => {
           </p>
 
           <!-- 导入模式选择 -->
-          <div class="mb-4">
-            <label class="text-sm font-medium mb-2 block">导入模式</label>
-            <div class="space-y-3">
-              <label class="flex items-start gap-3 cursor-pointer">
+          <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p class="text-sm font-medium mb-2">导入模式：</p>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   v-model="importMode"
                   value="append"
-                  class="mt-1"
+                  class="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                 />
-                <div>
-                  <div class="font-medium">追加模式</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
-                    保留现有数据，仅添加新链接（跳过重复）
-                  </div>
-                </div>
+                <span class="text-sm">追加模式（保留现有数据）</span>
               </label>
-              <label class="flex items-start gap-3 cursor-pointer">
+              <label class="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   v-model="importMode"
                   value="replace"
-                  class="mt-1"
+                  class="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                 />
-                <div>
-                  <div class="font-medium">替换模式</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
-                    删除所有现有数据，导入新数据
-                  </div>
-                </div>
+                <span class="text-sm text-error-600 dark:text-error-400">替换模式（删除现有数据）</span>
               </label>
             </div>
           </div>
 
-          <!-- 导入按钮 -->
-          <div class="space-y-3">
             <UButton 
               @click="triggerImport"
               :loading="importing"
               :disabled="importing"
               color="primary"
+            variant="outline"
               icon="i-mdi-upload"
             >
-              {{ importing ? '导入中...' : '选择文件导入' }}
+            选择文件导入
             </UButton>
-            
-            <!-- 替换模式警告 -->
-            <div
-              v-if="importMode === 'replace'"
-              class="p-3 bg-error-50 dark:bg-error-950 border border-error-200 dark:border-error-800 rounded-lg flex items-start gap-2"
-            >
-              <UIcon name="i-mdi-alert" class="text-error-600 dark:text-error-400 mt-0.5" />
-              <div>
-                <div class="font-medium text-error-900 dark:text-error-100 text-sm">警告</div>
-                <div class="text-error-700 dark:text-error-300 text-xs mt-1">
-                  替换模式会删除所有现有链接！
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- 隐藏的文件输入 -->
           <input
@@ -261,84 +238,82 @@ const handleFileSelect = async (event: Event) => {
             @change="handleFileSelect"
             class="hidden"
           />
+        </div>
 
-          <!-- 数据格式说明 -->
-          <details class="mt-4">
-            <summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
-              JSON 数据格式说明
-            </summary>
-            <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded text-xs">
-              <pre class="overflow-x-auto">{
-  "version": "1.0",
-  "exportDate": "2026-01-16T...",
-  "totalLinks": 10,
-  "links": [
-    {
-      "url": "https://example.com",
-      "title": "示例网站",
-      "description": "描述（可选）",
-      "icon": "图标URL（可选）",
-      "category": "分类（可选）",
-      "isPublic": false
-    }
-  ]
-}</pre>
+        <!-- 警告提示 -->
+        <div v-if="importMode === 'replace'" class="p-3 bg-error-50 dark:bg-error-950 border border-error-200 dark:border-error-800 rounded-lg">
+          <div class="flex items-start gap-2">
+            <UIcon name="i-mdi-alert" class="text-error-600 dark:text-error-400 mt-0.5" />
+            <div class="text-sm text-error-900 dark:text-error-100">
+              <p class="font-medium">注意：替换模式将删除所有现有链接！</p>
+              <p class="text-error-700 dark:text-error-300 mt-1">
+                请确保您已经备份了重要数据，此操作不可撤销。
+              </p>
             </div>
-          </details>
+          </div>
         </div>
       </div>
     </UCard>
 
-    <!-- 关于 -->
+    <!-- 关于信息 -->
     <UCard>
       <template #header>
         <h2 class="text-lg font-semibold flex items-center gap-2">
           <UIcon name="i-mdi-information" />
-          应用信息
+          关于 LinkLantern
         </h2>
       </template>
 
-      <div class="space-y-3 text-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">应用名称</span>
-          <span class="font-medium">LinkLantern</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">版本号</span>
-          <span class="font-medium">1.0.0</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">框架</span>
-          <span class="font-medium">Nuxt 4</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">UI 组件库</span>
-          <span class="font-medium">Nuxt UI</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 dark:text-gray-400">数据库</span>
-          <span class="font-medium">Prisma + MySQL</span>
-        </div>
-        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <h3 class="font-medium mb-2">关于 LinkLantern</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            LinkLantern 是一个现代化的个人链接管理工具，帮助您收藏和分享优质网站。
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-medium mb-2">项目简介</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+            LinkLantern 是一个现代化的个人链接管理与分享平台，基于 Nuxt 4 构建。
+            它提供了完整的链接收藏、分类、搜索和分享功能，帮助您更好地管理和组织网络资源。
           </p>
-          <div class="space-y-2 text-gray-600 dark:text-gray-400">
-            <p>✨ 特色功能：</p>
-            <ul class="list-disc list-inside space-y-1 ml-2">
-              <li>智能搜索，支持多个搜索引擎</li>
-              <li>实时热点榜单，聚合 50+ 平台</li>
-              <li>链接收藏与分类管理</li>
-              <li>公开分享优质链接</li>
-              <li>完整的用户认证系统</li>
-              <li>响应式设计，支持深色模式</li>
-              <li>数据导入导出，方便备份迁移</li>
-            </ul>
-          </div>
+        </div>
+
+        <UDivider />
+
+        <div>
+          <h3 class="font-medium mb-2">主要功能</h3>
+          <ul class="text-gray-600 dark:text-gray-400 text-sm space-y-1 list-disc list-inside">
+            <li>链接收藏与分类管理</li>
+            <li>多搜索引擎集成</li>
+            <li>热点榜单聚合（50+ 平台）</li>
+            <li>网页推荐与分享</li>
+            <li>数据导入导出</li>
+            <li>深色模式支持</li>
+            <li>自定义首页背景</li>
+            <li>必应每日壁纸</li>
+          </ul>
+        </div>
+
+        <UDivider />
+
+        <div>
+          <h3 class="font-medium mb-2">技术栈</h3>
+          <div class="flex flex-wrap gap-2">
+            <UBadge color="success">Nuxt 4</UBadge>
+            <UBadge color="info">Vue 3</UBadge>
+            <UBadge color="primary">TypeScript</UBadge>
+            <UBadge color="info">Tailwind CSS</UBadge>
+            <UBadge color="warning">Prisma</UBadge>
+            <UBadge color="info">MySQL</UBadge>
+        </div>
+        </div>
+
+        <UDivider />
+
+        <div class="text-center pt-4">
+          <p class="text-gray-500 dark:text-gray-400 text-sm">
+            Made with ❤️ by LinkLantern Team
+          </p>
+          <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">
+            Version 1.0.0 © 2026
+          </p>
         </div>
       </div>
     </UCard>
   </div>
 </template>
-

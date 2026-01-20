@@ -11,6 +11,10 @@ export interface User {
   email: string
   name?: string
   avatar?: string
+  homeBackground?: string
+  useBingWallpaper?: boolean
+  backgroundOpacity?: number
+  backgroundBlur?: number
   isActive: boolean
   emailVerified: boolean
   lastLoginAt?: string
@@ -326,6 +330,160 @@ export const useAuth = () => {
     }
   }
 
+  /**
+   * 更新首页背景
+   */
+  const updateHomeBackground = async (background: string) => {
+    if (!accessToken.value) return { success: false, message: '未登录' }
+
+    loading.value = true
+    try {
+      const response = await $fetch<any>('/api/auth/background', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+        body: { background },
+      })
+
+      if (response.success) {
+        user.value = response.data.user
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        return { success: true, message: '背景图片上传成功' }
+      }
+    } catch (error: any) {
+      console.error('更新背景失败:', error)
+      return {
+        success: false,
+        message: error.data?.statusMessage || error.message || '更新背景失败',
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 删除首页背景
+   */
+  const deleteHomeBackground = async () => {
+    if (!accessToken.value) return { success: false, message: '未登录' }
+
+    loading.value = true
+    try {
+      const response = await $fetch<any>('/api/auth/background', {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+      })
+
+      if (response.success) {
+        user.value = response.data.user
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        return { success: true, message: '背景图片已删除' }
+      }
+    } catch (error: any) {
+      console.error('删除背景失败:', error)
+      return {
+        success: false,
+        message: error.data?.statusMessage || error.message || '删除背景失败',
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 获取首页背景
+   */
+  const getHomeBackground = async () => {
+    if (!accessToken.value) return { success: false, message: '未登录', data: null }
+
+    try {
+      const response = await $fetch<any>('/api/auth/background', {
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+      })
+
+      if (response.success) {
+        return { success: true, data: response.data.background }
+      }
+      return { success: false, message: '获取背景失败', data: null }
+    } catch (error: any) {
+      console.error('获取背景失败:', error)
+      return {
+        success: false,
+        message: error.data?.statusMessage || error.message || '获取背景失败',
+        data: null,
+      }
+    }
+  }
+
+  /**
+   * 切换必应壁纸设置
+   */
+  const toggleBingWallpaper = async (enabled: boolean) => {
+    if (!accessToken.value) return { success: false, message: '未登录' }
+
+    loading.value = true
+    try {
+      const response = await $fetch<any>('/api/auth/bing-wallpaper', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+        body: { enabled },
+      })
+
+      if (response.success) {
+        user.value = response.data.user
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        return { success: true, message: response.message || '设置成功' }
+      }
+    } catch (error: any) {
+      console.error('切换必应壁纸失败:', error)
+      return {
+        success: false,
+        message: error.data?.statusMessage || error.message || '切换失败',
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 更新背景配置
+   */
+  const updateBackgroundConfig = async (config: { opacity?: number; blur?: number }) => {
+    if (!accessToken.value) return { success: false, message: '未登录' }
+
+    loading.value = true
+    try {
+      const response = await $fetch<any>('/api/auth/background-config', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+        body: config,
+      })
+
+      if (response.success) {
+        user.value = response.data.user
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        return { success: true, message: response.message || '配置更新成功' }
+      }
+    } catch (error: any) {
+      console.error('更新背景配置失败:', error)
+      return {
+        success: false,
+        message: error.data?.statusMessage || error.message || '更新失败',
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // 状态
     user: readonly(user),
@@ -342,6 +500,11 @@ export const useAuth = () => {
     refreshUserInfo: fetchCurrentUser, // 别名
     refreshAccessToken,
     updateProfile,
+    updateHomeBackground,
+    deleteHomeBackground,
+    getHomeBackground,
+    toggleBingWallpaper,
+    updateBackgroundConfig,
   }
 }
 

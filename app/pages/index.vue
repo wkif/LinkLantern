@@ -7,6 +7,15 @@ const { searchHistory, addToHistory, clearHistory, removeFromHistory, getSuggest
 const router = useRouter()
 const toast = useToast()
 
+// 背景图片状态
+const homeBackground = computed(() => user.value?.homeBackground || null)
+const useBingWallpaper = computed(() => user.value?.useBingWallpaper || false)
+const backgroundOpacity = computed(() => user.value?.backgroundOpacity || 80)
+const backgroundBlur = computed(() => user.value?.backgroundBlur || 8)
+
+// 必应壁纸 URL
+const bingWallpaperUrl = 'https://uapis.cn/api/v1/image/bing-daily'
+
 // 搜索相关
 const searchQuery = ref('')
 const selectedEngine = ref('google')
@@ -250,7 +259,43 @@ const handlePublicLinkClick = (link: any) => {
 </style>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative">
+  <div 
+    class="min-h-screen relative"
+    :class="{ 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800': !homeBackground && !useBingWallpaper }"
+  >
+    <!-- 必应壁纸背景层 -->
+    <div 
+      v-if="useBingWallpaper" 
+      class="fixed inset-0 z-0"
+      :style="{ backgroundImage: `url(${bingWallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
+    >
+      <!-- 半透明遮罩层，使用用户配置的透明度和模糊度 -->
+      <div 
+        class="absolute inset-0 bg-white dark:bg-gray-900"
+        :style="{
+          opacity: backgroundOpacity / 100,
+          backdropFilter: `blur(${backgroundBlur}px)`,
+          WebkitBackdropFilter: `blur(${backgroundBlur}px)`
+        }"
+      ></div>
+    </div>
+
+    <!-- 自定义背景层 -->
+    <div 
+      v-else-if="homeBackground" 
+      class="fixed inset-0 z-0"
+      :style="{ backgroundImage: `url(${homeBackground})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
+    >
+      <!-- 半透明遮罩层，使用用户配置的透明度和模糊度 -->
+      <div 
+        class="absolute inset-0 bg-white dark:bg-gray-900"
+        :style="{
+          opacity: backgroundOpacity / 100,
+          backdropFilter: `blur(${backgroundBlur}px)`,
+          WebkitBackdropFilter: `blur(${backgroundBlur}px)`
+        }"
+      ></div>
+    </div>
 
     <!-- 主要内容区域 -->
     <main class="container mx-auto px-4 py-8 animate-fade-in">
@@ -495,6 +540,8 @@ const handlePublicLinkClick = (link: any) => {
 
       <!-- 网页推荐部分（所有用户都可见） -->
       <div class="max-w-7xl mx-auto mt-16">
+        <!-- 添加背景容器以提高可读性 -->
+        <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
         <!-- 标题和控制栏 -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -544,7 +591,7 @@ const handlePublicLinkClick = (link: any) => {
         <div class="inline-block p-4 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
           <UIcon name="i-mdi-web-off" class="text-5xl text-gray-400" />
         </div>
-        <h3 class="text-xl font-semibold mb-2">暂无公开推荐</h3>
+          <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">暂无公开推荐</h3>
         <p class="text-gray-600 dark:text-gray-400">
           还没有用户分享链接，成为第一个分享者吧！
         </p>
@@ -610,7 +657,8 @@ const handlePublicLinkClick = (link: any) => {
             </div>
           </UCard>
         </div>
-
+        </div>
+        <!-- 背景容器结束 -->
       </div>
     </main>
 

@@ -12,6 +12,9 @@
 - ⚡️ **Vite** - 极速的开发体验
 - 🎨 **Nuxt UI** - 美观且功能强大的 UI 组件库
 - 🎨 **精致配色** - 温暖优雅的紫褐色主题 (#563950 + #FAED25 + #5B5561)
+- 🖼️ **自定义背景** - 个性化首页背景，base64 存储，支持透明度和模糊度调节
+- 🌅 **必应壁纸** - 每日自动更新的必应精美壁纸
+- 🎨 **实时预览** - 背景效果实时预览，快速预设切换
 - 🗄️ **Prisma + MySQL** - 现代化的数据库 ORM，类型安全的数据库访问
 - 🔗 **链接管理** - 完整的 CRUD 功能，分类管理，点击统计
 - 📄 **分页查询** - 服务端分页，支持大量数据高效管理
@@ -142,6 +145,11 @@ pnpm prisma:generate
 - `GET http://localhost:3000/api/auth/me` - 获取当前用户信息（需要 JWT）
 - `PUT http://localhost:3000/api/auth/me` - 更新当前用户信息（需要 JWT）
 - `PUT http://localhost:3000/api/auth/password` - 修改密码（需要 JWT）
+- `PUT http://localhost:3000/api/auth/background` - 更新首页背景（需要 JWT）
+- `GET http://localhost:3000/api/auth/background` - 获取首页背景（需要 JWT）
+- `DELETE http://localhost:3000/api/auth/background` - 删除首页背景（需要 JWT）
+- `PUT http://localhost:3000/api/auth/bing-wallpaper` - 切换必应壁纸（需要 JWT）
+- `PUT http://localhost:3000/api/auth/background-config` - 更新背景配置（需要 JWT）
 
 **链接管理：**
 - `GET http://localhost:3000/api/links` - 获取我的链接（需要 JWT）
@@ -434,6 +442,19 @@ LinkLantern/
   - **排序功能**：多字段排序，升降序切换
   - **批量操作**：快速编辑和删除
   - **模态框交互**：友好的新增/编辑体验
+- **首页背景设置**：
+  - 上传自定义背景图片（支持 JPG、PNG、GIF、WebP）
+  - 图片 base64 格式存储到数据库
+  - 实时预览效果
+  - 支持删除和更换背景
+  - 文件大小限制 4MB
+  - **必应壁纸开关**：一键启用必应每日壁纸 ✨ 新增
+  - 必应壁纸每天自动更新，无需手动上传 ✨ 新增
+  - 与自定义背景智能切换 ✨ 新增
+- **数据备份管理**：
+  - 导出链接数据为 JSON 文件
+  - 导入链接数据（追加/替换模式）
+  - 方便数据备份和迁移
 - **关于页面**：
   - 应用信息展示
   - 版本号和技术栈
@@ -456,14 +477,18 @@ LinkLantern/
 ```prisma
 // 用户模型
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  password    String
-  name        String?
-  avatar      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  links       Link[]
+  id                 Int      @id @default(autoincrement())
+  email              String   @unique
+  password           String
+  name               String?
+  avatar             String?
+  homeBackground     String?  @db.LongText  // 首页背景图片（base64）
+  useBingWallpaper   Boolean  @default(false)  // 是否启用必应壁纸
+  backgroundOpacity  Int      @default(80)  // 背景透明度（0-100）
+  backgroundBlur     Int      @default(8)   // 背景模糊度（0-20px）
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  links              Link[]
 }
 
 // 链接模型
@@ -556,7 +581,13 @@ DATABASE_URL="file:./dev.db"
 - [⭐ 网页推荐功能](./docs/PUBLIC_LINKS_FEATURE.md) - 公开分享机制
 - [🎛️ 管理后台指南](./docs/ADMIN_GUIDE.md) - 完整的后台管理系统
 - [💾 数据导入导出](./docs/IMPORT_EXPORT_GUIDE.md) - 备份和迁移数据
-- [🎨 配色方案说明](./docs/COLOR_SCHEME.md) - UI 配色体系详解 ✨ 新增
+- [🎨 配色方案说明](./docs/COLOR_SCHEME.md) - UI 配色体系详解
+- [🖼️ 首页背景功能](./docs/HOME_BACKGROUND_FEATURE.md) - 自定义背景使用指南
+- [🎨 背景配置功能](./docs/BACKGROUND_CONFIG_FEATURE.md) - 透明度和模糊度调节
+- [🧩 背景设置组件](./docs/BACKGROUND_SETTINGS_COMPONENT.md) - 组件化重构文档 ✨ 新增
+- [🌅 必应壁纸功能](./docs/BING_WALLPAPER_FEATURE.md) - 必应每日壁纸指南
+- [🎨 背景图片资源](./docs/IMAGE_RESOURCES.md) - 推荐图片来源
+- [⚠️ 数据库限制说明](./docs/DATABASE_LIMITS.md) - 文件大小限制详解
 - [📊 功能总结](./docs/FEATURES_SUMMARY.md) - 所有功能概览
 
 ## 🎯 开发计划
@@ -572,7 +603,10 @@ DATABASE_URL="file:./dev.db"
 - [x] 表格样式列表
 - [x] 深色模式支持
 - [x] 数据导入导出（备份和迁移）
-- [x] 配色方案优化（温暖优雅主题）✨ 新增
+- [x] 配色方案优化（温暖优雅主题）
+- [x] 自定义首页背景（base64 存储）
+- [x] 必应每日壁纸（自动更新）
+- [x] 背景效果配置（透明度+模糊度+实时预览）✨ 新增
 
 ### 计划中 🚧
 - [ ] 链接标签系统
