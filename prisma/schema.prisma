@@ -40,7 +40,7 @@ model Link {
   url         String   @db.VarChar(1000)               // 链接地址
   title       String   @db.VarChar(255)                // 网站标题
   description String?  @db.Text                        // 描述（可选）
-  icon        String?  @db.VarChar(500)                // 图标/favicon URL（可选）
+  icon        String?  @db.Text                        // 图标 (base64 或 URL)
   category    String?  @db.VarChar(100)                // 分类（可选）
   isPublic    Boolean  @default(false)                 // 是否公开
   clicks      Int      @default(0)                     // 点击次数

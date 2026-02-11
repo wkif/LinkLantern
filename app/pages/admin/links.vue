@@ -224,6 +224,20 @@ const openDeleteModal = (link: Link) => {
   showDeleteModal.value = true
 }
 
+// 处理导入成功
+const handleImportSuccess = async () => {
+  // 重新加载链接列表
+  await loadLinks()
+  // 重新加载分类列表
+  await fetchAllCategories()
+  
+  toast.add({
+    title: '提示',
+    description: '书签导入成功，数据已刷新',
+    color: 'success',
+  })
+}
+
 // 添加链接
 const saving = ref(false)
 const handleAdd = async () => {
@@ -352,14 +366,20 @@ const formatDate = (date: string) => {
         </p>
       </div>
 
-      <UButton
-        color="primary"
-        icon="i-mdi-plus"
-        size="lg"
-        @click="openAddModal"
-      >
-        添加链接
-      </UButton>
+      <div class="flex items-center gap-2">
+        <!-- 导入书签按钮 -->
+        <ImportBookmarks @success="handleImportSuccess" />
+        
+        <!-- 添加链接按钮 -->
+        <UButton
+          color="primary"
+          icon="i-mdi-plus"
+          size="lg"
+          @click="openAddModal"
+        >
+          添加链接
+        </UButton>
+      </div>
     </div>
 
     <!-- 搜索和筛选 -->

@@ -17,6 +17,7 @@
 - 🎨 **实时预览** - 背景效果实时预览，快速预设切换
 - 🗄️ **Prisma + MySQL** - 现代化的数据库 ORM，类型安全的数据库访问
 - 🔗 **链接管理** - 完整的 CRUD 功能，分类管理，点击统计
+- 📥 **书签导入** - 从 Chrome、Firefox、Edge 等浏览器一键导入书签
 - 📄 **分页查询** - 服务端分页，支持大量数据高效管理
 - 🔍 **智能搜索** - 多搜索引擎支持，实时搜索建议，API 集成
 - 🔥 **热点榜单** - 实时热榜聚合，支持微博、知乎、B站、掘金等 50+ 平台
@@ -90,6 +91,17 @@ pnpm db:push
 pnpm db:seed
 ```
 
+**⚠️ 重要提示:** 如果之前已创建过数据库，需要升级 `icon` 字段类型以支持 base64 图标：
+```bash
+# 快速升级（推荐）
+bash scripts/upgrade-icon-field.sh
+
+# 或手动执行
+pnpm db:push
+```
+
+详细说明请查看：[图标字段升级文档](./docs/ICON_FIELD_UPGRADE.md)
+
 ### 📒 开发服务器
 
 启动开发服务器，访问 `http://localhost:3000`
@@ -159,6 +171,9 @@ pnpm prisma:generate
 - `DELETE http://localhost:3000/api/links/:id` - 删除链接（需要 JWT）
 - `GET http://localhost:3000/api/links/public` - 获取公开推荐链接（无需认证）
 - `POST http://localhost:3000/api/links/:id/click` - 记录点击（需要 JWT）
+- `GET http://localhost:3000/api/links/export` - 导出链接数据（需要 JWT）
+- `POST http://localhost:3000/api/links/import` - 导入链接数据（需要 JWT）
+- `POST http://localhost:3000/api/links/import-bookmarks` - 导入浏览器书签（需要 JWT）✨ 新增
 
 **搜索相关：**
 - `GET http://localhost:3000/api/search/suggestions` - 获取搜索建议（无需认证）
@@ -586,6 +601,7 @@ DATABASE_URL="file:./dev.db"
 - [⭐ 网页推荐功能](./docs/PUBLIC_LINKS_FEATURE.md) - 公开分享机制
 - [🎛️ 管理后台指南](./docs/ADMIN_GUIDE.md) - 完整的后台管理系统
 - [💾 数据导入导出](./docs/IMPORT_EXPORT_GUIDE.md) - 备份和迁移数据
+- [📥 浏览器书签导入](./docs/IMPORT_BOOKMARKS_GUIDE.md) - 从浏览器导入书签 ✨ 新增
 - [🎨 配色方案说明](./docs/COLOR_SCHEME.md) - UI 配色体系详解
 - [🖼️ 首页背景功能](./docs/HOME_BACKGROUND_FEATURE.md) - 自定义背景使用指南
 - [🎨 背景配置功能](./docs/BACKGROUND_CONFIG_FEATURE.md) - 透明度和模糊度调节
@@ -607,7 +623,8 @@ DATABASE_URL="file:./dev.db"
 - [x] 管理后台（完整 UI）
 - [x] 表格样式列表
 - [x] 深色模式支持
-- [x] 数据导入导出（备份和迁移）
+- [x] 数据导入导出（备份和迁移） ✅
+- [x] 浏览器书签导入 ✅ 新增
 - [x] 配色方案优化（温暖优雅主题）
 - [x] 自定义首页背景（base64 存储）
 - [x] 必应每日壁纸（自动更新）
