@@ -65,13 +65,13 @@
           rel="noopener noreferrer"
           class="group flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary hover:shadow-md transition-all duration-200"
         >
-          <!-- 排名徽章 -->
+          <!-- 排名徽章（主题色） -->
           <div 
             class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg font-bold text-sm shadow-sm"
             :class="{
-              'bg-gradient-to-br from-red-500 to-red-600 text-white': index < 3,
-              'bg-gradient-to-br from-orange-400 to-orange-500 text-white': index >= 3 && index < 10,
-              'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': index >= 10
+              'bg-gradient-to-br from-primary-500 to-primary-600 text-white': index < 3,
+              'bg-gradient-to-br from-secondary-400 to-secondary-500 text-white': index >= 3 && index < 10,
+              'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-300': index >= 10
             }"
           >
             {{ index + 1 }}

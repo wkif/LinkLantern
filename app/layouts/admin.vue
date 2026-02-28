@@ -7,9 +7,11 @@
           <!-- Logo 和标题 -->
           <div class="flex items-center gap-4">
             <NuxtLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div class="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-xl">
-                🏮
-              </div>
+              <img
+                :src="logoImg"
+                alt="LinkLantern"
+                class="h-8 w-auto object-contain"
+              />
               <span class="font-bold text-lg text-primary-700 dark:text-accent-400">LinkLantern</span>
             </NuxtLink>
             <UBadge class="bg-accent-400 text-primary-900 font-semibold">管理后台</UBadge>
@@ -78,6 +80,8 @@
 </template>
 
 <script setup lang="ts">
+import logoImg from '~/assets/images/logo.png'
+
 const { user, logout } = useAuth()
 const { links } = useLinks()
 const router = useRouter()

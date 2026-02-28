@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import logoImg from '~/assets/images/logo.png'
+
 definePageMeta({
   layout: false,
 })
@@ -106,15 +108,11 @@ const handleLogin = async () => {
       <div class="w-full max-w-md">
         <!-- Logo 和标题 -->
         <div class="text-center mb-8 animate-fade-in">
-          <div class="inline-block mb-4">
-            <div
-              class="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-5xl mb-2 animate-bounce-slow shadow-xl">
-              🏮
-            </div>
-          </div>
-          <h1 class="text-5xl font-bold mb-3 text-accent-gradient">
-            LinkLantern
-          </h1>
+          <img
+            :src="logoImg"
+            alt="LinkLantern"
+            class="h-24 w-auto mx-auto mb-4 object-contain animate-bounce-slow"
+          />
           <p class="text-secondary-600 dark:text-secondary-300 text-lg font-medium">欢迎回来！登录您的账户</p>
         </div>
 

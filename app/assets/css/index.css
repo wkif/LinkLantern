@@ -1,6 +1,7 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: 'MiSans', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* 自定义 CSS 变量 */
@@ -376,6 +377,16 @@ button[class*="bg-primary"]:hover,
 input:focus,
 textarea:focus {
   animation: pulse 0.3s ease-out;
+}
+
+/* 深色模式输入框边界与焦点环 */
+.dark input:focus,
+.dark textarea:focus,
+.dark [data-focus-visible] {
+  --tw-ring-color: rgb(195 171 189 / 0.4);
+}
+.dark [data-focus-visible].ring-2 {
+  --tw-ring-color: rgb(195 171 189 / 0.5);
 }
 
 /* Tab 切换动画 */

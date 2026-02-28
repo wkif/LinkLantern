@@ -7,6 +7,8 @@
   - 实时预览效果
 -->
 <script setup lang="ts">
+import logoImg from '~/assets/images/logo.png'
+
 const toast = useToast()
 const { updateHomeBackground, deleteHomeBackground, toggleBingWallpaper, updateBackgroundConfig, user } = useAuth()
 
@@ -407,9 +409,11 @@ const handleDeleteBackground = async () => {
             
             <!-- 示例内容 -->
             <div class="relative z-10 p-6 flex flex-col items-center justify-center h-full">
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                LinkLantern
-              </h3>
+              <img
+                :src="logoImg"
+                alt="LinkLantern"
+                class="h-12 w-auto mb-2 object-contain"
+              />
               <p class="text-gray-600 dark:text-gray-400 mb-4">
                 这是首页背景效果预览
               </p>
