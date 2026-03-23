@@ -67,11 +67,11 @@ const suggestions = computed(() => {
 })
 
 // Tab 状态管理（默认显示热榜，避免 hydration mismatch）
-const activeTab = ref<'links' | 'hotboard'>('hotboard')
+const activeTab = ref<'links' | 'hotboard' | 'ai'>('hotboard')
 const currentHotboardType = ref('weibo')
 
 // 切换 Tab
-const switchTab = (tab: 'links' | 'hotboard') => {
+const switchTab = (tab: 'links' | 'hotboard' | 'ai') => {
   activeTab.value = tab
 }
 
@@ -427,28 +427,41 @@ const handlePublicLinkClick = (link: any) => {
       <!-- 已登录用户：Tab 切换显示内容 -->
       <div v-if="isLoggedIn" class="max-w-7xl mx-auto relative z-10 animate-fade-in-up animate-delay-300">
         <!-- Tab 导航 -->
-        <div class="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
-          <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'links'
-            ? 'text-primary border-b-2 border-primary'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-            @click="switchTab('links')">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-mdi-link-variant" class="text-xl" />
-              <span>我的链接</span>
-              <UBadge size="xs" color="neutral" variant="subtle">{{ links.length }}</UBadge>
-            </div>
-          </button>
+        <div class="flex items-center justify-between mb-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-4">
+            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'links'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+              @click="switchTab('links')">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-mdi-link-variant" class="text-xl" />
+                <span>我的链接</span>
+                <UBadge size="xs" color="neutral" variant="subtle">{{ links.length }}</UBadge>
+              </div>
+            </button>
 
-          <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'hotboard'
-            ? 'text-primary border-b-2 border-primary'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-            @click="switchTab('hotboard')">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-mdi-fire" class="text-xl" />
-              <span>热点榜</span>
-            </div>
-          </button>
-        </div>
+            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'hotboard'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+              @click="switchTab('hotboard')">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-mdi-fire" class="text-xl" />
+                <span>热点榜</span>
+              </div>
+            </button>
+
+            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'ai'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
+              @click="switchTab('ai')">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-mdi-robot" class="text-xl" />
+                <span>AI 对话</span>
+              </div>
+            </button>
+          </div>
+
+          </div>
         <!-- Tab 内容（带过渡） -->
         <Transition name="tab-fade" mode="out-in">
           <div :key="activeTab">
@@ -457,6 +470,9 @@ const handlePublicLinkClick = (link: any) => {
             </div>
             <div v-else-if="activeTab === 'hotboard'">
               <HotboardList :default-platform="currentHotboardType" />
+            </div>
+            <div v-else-if="activeTab === 'ai'">
+              <AiChat />
             </div>
           </div>
         </Transition>

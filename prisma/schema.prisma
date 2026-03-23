@@ -31,6 +31,12 @@ model User {
   // 关联：用户可以有多个收藏链接
   links                 Link[]
 
+  // 关联：用户可以有多个 AI 配置
+  aiConfigs             AiConfig[]
+
+  // 关联：AI 对话话题
+  aiConversations       AiConversation[]
+
   @@index([email])
 }
 
@@ -53,6 +59,55 @@ model Link {
 
   @@index([userId])
   @@index([category])
+}
+
+// AI 配置模型 - 用户可以配置多个 AI 终端
+model AiConfig {
+  id            Int       @id @default(autoincrement())
+  name          String    @db.VarChar(100)                  // 配置名称 (如 "GPT-4", "Claude")
+  apiKey        String    @db.VarChar(500)                  // OpenAI API 密钥
+  baseUrl       String    @default("https://api.openai.com/v1") @db.VarChar(500)  // API 基础 URL
+  model         String    @default("gpt-4o") @db.VarChar(100) // 模型名称
+  maxTokens     Int       @default(4096)                     // 最大令牌数
+  temperature   Float     @default(0.7)                      // 温度参数
+  isActive      Boolean   @default(false)                    // 是否激活
+  userId        Int                                      // 所属用户ID
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关联到用户
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// AI 对话话题（会话）
+model AiConversation {
+  id        Int          @id @default(autoincrement())
+  title     String       @default("新话题") @db.VarChar(200)
+  userId    Int
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+}
+
+// AI 对话单条消息
+model AiMessage {
+  id             Int             @id @default(autoincrement())
+  conversationId Int
+  role           String          @db.VarChar(20) // user | assistant
+  content        String          @db.LongText
+  createdAt      DateTime        @default(now())
+
+  conversation   AiConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
 }
 
 

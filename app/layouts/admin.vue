@@ -111,6 +111,11 @@ const navItems = computed(() => [
     badgeColor: 'primary',
   },
   {
+    path: '/admin/ai',
+    icon: 'i-mdi-robot',
+    label: 'AI 配置',
+  },
+  {
     path: '/admin/settings',
     icon: 'i-mdi-cog',
     label: '设置',
