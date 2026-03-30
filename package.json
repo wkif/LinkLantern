@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "prisma generate && nuxt build",
+    "extension:zip": "node scripts/zip-extension.mjs",
+    "build": "prisma generate && node scripts/zip-extension.mjs && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -13,7 +14,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
-    "vercel-build": "prisma generate && prisma migrate deploy && nuxt build"
+    "vercel-build": "prisma generate && prisma migrate deploy && node scripts/zip-extension.mjs && nuxt build"
   },
   "dependencies": {
     "@nuxt/ui": "^4.3.0",

@@ -6,6 +6,112 @@ definePageMeta({
 
 const toast = useToast()
 const { exportLinks: exportLinksAPI, importLinks: importLinksAPI } = useLinks()
+const { accessToken } = useAuth()
+
+const bookmarkHasToken = ref(false)
+const bookmarkLoading = ref(false)
+const showBookmarkTokenModal = ref(false)
+const bookmarkTokenPlain = ref('')
+
+const fetchBookmarkTokenStatus = async () => {
+  if (!accessToken.value) return
+  try {
+    const res = await $fetch<{ success: boolean; data: { hasToken: boolean } }>(
+      '/api/auth/bookmark-token',
+      { headers: { Authorization: `Bearer ${accessToken.value}` } },
+    )
+    if (res.success) bookmarkHasToken.value = res.data.hasToken
+  } catch {
+    bookmarkHasToken.value = false
+  }
+}
+
+watch(
+  () => accessToken.value,
+  (t) => {
+    if (t) fetchBookmarkTokenStatus()
+  },
+  { immediate: true },
+)
+
+const createBookmarkToken = async () => {
+  bookmarkLoading.value = true
+  try {
+    const res = await $fetch<{
+      success: boolean
+      data: { token: string }
+      message?: string
+    }>('/api/auth/bookmark-token', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken.value}` },
+      body: {},
+    })
+    if (res.success && res.data?.token) {
+      bookmarkTokenPlain.value = res.data.token
+      showBookmarkTokenModal.value = true
+      bookmarkHasToken.value = true
+      toast.add({
+        title: '令牌已生成',
+        description: res.message || '请复制并保存到扩展选项中',
+        color: 'success',
+        icon: 'i-mdi-check-circle',
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      title: '无法生成',
+      description: error.data?.statusMessage || '若已有令牌，请使用「重新生成」',
+      color: 'warning',
+      icon: 'i-mdi-alert',
+    })
+  } finally {
+    bookmarkLoading.value = false
+  }
+}
+
+const rotateBookmarkToken = async () => {
+  bookmarkLoading.value = true
+  try {
+    const res = await $fetch<{
+      success: boolean
+      data: { token: string }
+      message?: string
+    }>('/api/auth/bookmark-token', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken.value}` },
+      body: { rotate: true },
+    })
+    if (res.success && res.data?.token) {
+      bookmarkTokenPlain.value = res.data.token
+      showBookmarkTokenModal.value = true
+      bookmarkHasToken.value = true
+      toast.add({
+        title: '已轮换令牌',
+        description: res.message || '旧令牌已失效',
+        color: 'success',
+        icon: 'i-mdi-check-circle',
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      title: '操作失败',
+      description: error.data?.statusMessage || '请稍后重试',
+      color: 'error',
+      icon: 'i-mdi-alert-circle',
+    })
+  } finally {
+    bookmarkLoading.value = false
+  }
+}
+
+const copyBookmarkToken = async () => {
+  try {
+    await navigator.clipboard.writeText(bookmarkTokenPlain.value)
+    toast.add({ title: '已复制到剪贴板', color: 'success', icon: 'i-mdi-content-copy' })
+  } catch {
+    toast.add({ title: '复制失败', color: 'error', icon: 'i-mdi-alert-circle' })
+  }
+}
 
 // 导入导出状态
 const exporting = ref(false)
@@ -151,6 +257,90 @@ const handleFileSelect = async (event: Event) => {
 
     <!-- 首页背景设置组件 -->
     <BackgroundSettings class="mb-6" />
+
+    <!-- 浏览器快捷收藏 -->
+    <UCard class="mb-6">
+      <template #header>
+        <h2 class="text-lg font-semibold flex items-center gap-2">
+          <UIcon name="i-mdi-puzzle" />
+          浏览器快捷收藏
+        </h2>
+      </template>
+
+      <div class="space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          安装 Chrome / Edge 扩展后，在任意网页按快捷键即可把当前页保存到 LinkLantern，无需再打开管理后台手动添加。
+        </p>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href="/extensions/linklantern-bookmark.zip"
+            download="linklantern-bookmark.zip"
+            class="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+          >
+            <UIcon name="i-mdi-download" class="shrink-0" />
+            下载扩展（ZIP）
+          </a>
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            解压后，在浏览器中选择「加载已解压的扩展程序」并选中解压出的文件夹。
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          开发者也可直接使用仓库内目录
+          <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">extensions/linklantern-bookmark</code>
+          。
+        </p>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          状态：{{ bookmarkHasToken ? '已配置扩展令牌' : '尚未生成令牌' }} · 默认快捷键
+          <kbd class="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">Alt</kbd>
+          +
+          <kbd class="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">Shift</kbd>
+          +
+          <kbd class="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">Y</kbd>
+          （可在浏览器的扩展快捷键设置里修改）。
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <UButton
+            color="primary"
+            icon="i-mdi-key-plus"
+            :loading="bookmarkLoading"
+            :disabled="bookmarkLoading || bookmarkHasToken"
+            @click="createBookmarkToken"
+          >
+            生成扩展令牌
+          </UButton>
+          <UButton
+            color="warning"
+            variant="soft"
+            icon="i-mdi-key-change"
+            :loading="bookmarkLoading"
+            :disabled="bookmarkLoading || !bookmarkHasToken"
+            @click="rotateBookmarkToken"
+          >
+            重新生成令牌
+          </UButton>
+        </div>
+        <p class="text-xs text-amber-700 dark:text-amber-300">
+          令牌等同于账户钥匙，请勿泄露；重新生成后旧令牌立即失效，需在扩展选项里更新。
+        </p>
+      </div>
+    </UCard>
+
+    <UModal v-model:open="showBookmarkTokenModal" title="请立即保存扩展令牌">
+      <template #body>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          关闭此窗口后无法再次查看完整令牌。请复制并粘贴到扩展选项页的「扩展令牌」字段。
+        </p>
+        <pre
+          class="text-xs p-3 rounded-lg bg-gray-100 dark:bg-gray-900 overflow-x-auto break-all font-mono"
+        >{{ bookmarkTokenPlain }}</pre>
+        <div class="flex justify-end gap-2 mt-4">
+          <UButton variant="ghost" @click="showBookmarkTokenModal = false">关闭</UButton>
+          <UButton color="primary" icon="i-mdi-content-copy" @click="copyBookmarkToken">
+            复制令牌
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <!-- 数据管理 -->
     <UCard class="mb-6">

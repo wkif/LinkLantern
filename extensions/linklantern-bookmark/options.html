@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LinkLantern 扩展设置</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, sans-serif;
+    }
+    body {
+      max-width: 36rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    label { display: block; font-weight: 600; margin-top: 1rem; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 0.35rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid #8884;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 1.25rem;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: #ea580c;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.05); }
+    .hint { font-size: 13px; color: #666; margin-top: 0.35rem; }
+    .ok { color: #16a34a; font-size: 14px; margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h1>LinkLantern 快捷收藏</h1>
+  <p>在管理后台「关于 → 浏览器快捷收藏」生成令牌后，将信息填到下方并保存。</p>
+
+  <label for="baseUrl">站点根地址</label>
+  <input id="baseUrl" type="url" placeholder="https://你的域名.com" autocomplete="off" />
+  <p class="hint">不要末尾斜杠，需与浏览器访问 LinkLantern 时用的地址一致（含 https）。</p>
+
+  <label for="bookmarkToken">扩展令牌</label>
+  <input id="bookmarkToken" type="password" placeholder="在后台生成后粘贴" autocomplete="off" />
+  <p class="hint">令牌仅显示一次，请妥善保管；泄露后请在后台重新生成。</p>
+
+  <button type="button" id="save">保存</button>
+  <p id="status" class="ok" hidden></p>
+
+  <p class="hint" style="margin-top:2rem;">
+    默认快捷键：<strong>Alt+Shift+Y</strong>（可在浏览器扩展管理页中修改）。
+  </p>
+  <script src="options.js"></script>
+</body>
+</html>

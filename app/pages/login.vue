@@ -179,11 +179,21 @@ const handleLogin = async () => {
         </div>
 
         <!-- 返回首页 -->
-        <div class="mt-6 text-center animate-fade-in-delayed">
+        <div class="mt-6 text-center animate-fade-in-delayed space-y-3">
           <UButton variant="link" color="neutral" to="/" icon="i-mdi-arrow-left" size="lg"
             class="text-secondary-600 dark:text-secondary-300">
             返回首页
           </UButton>
+          <div>
+            <a
+              href="/extensions/linklantern-bookmark.zip"
+              download="linklantern-bookmark.zip"
+              class="inline-flex items-center gap-1.5 text-sm text-primary-600 dark:text-accent-400 hover:underline"
+            >
+              <UIcon name="i-mdi-puzzle" class="shrink-0" />
+              下载浏览器快捷收藏扩展（ZIP）
+            </a>
+          </div>
         </div>
       </div>
     </div>

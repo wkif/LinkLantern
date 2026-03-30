@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "LinkLantern 快捷收藏",
+  "version": "1.0.0",
+  "description": "使用快捷键将当前网页收藏到 LinkLantern",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon48.png"
+  },
+  "permissions": ["storage", "activeTab", "notifications"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "save-to-linklantern": {
+      "suggested_key": {
+        "default": "Alt+Shift+Y",
+        "mac": "Alt+Shift+Y"
+      },
+      "description": "收藏当前页到 LinkLantern"
+    }
+  }
+}

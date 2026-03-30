@@ -25,6 +25,7 @@ model User {
   isActive              Boolean   @default(true)                // 账户是否激活
   emailVerified         Boolean   @default(false)               // 邮箱是否验证
   lastLoginAt           DateTime?                               // 最后登录时间
+  bookmarkToken         String?   @unique @db.VarChar(64)        // 浏览器扩展快捷收藏令牌（明文，可轮换）
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   
