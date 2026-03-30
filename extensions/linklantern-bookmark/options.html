@@ -52,11 +52,18 @@
   <input id="bookmarkToken" type="password" placeholder="在后台生成后粘贴" autocomplete="off" />
   <p class="hint">令牌仅显示一次，请妥善保管；泄露后请在后台重新生成。</p>
 
+  <label class="flex items-center gap-2 cursor-pointer" style="margin-top:1rem;font-weight:600;">
+    <input id="debug" type="checkbox" class="w-4 h-4" />
+    调试模式（在 Service Worker 控制台输出详细日志）
+  </label>
+  <p class="hint">查看日志：扩展管理页 → 本扩展 →「Service Worker」旁的「检查视图」。</p>
+
   <button type="button" id="save">保存</button>
   <p id="status" class="ok" hidden></p>
 
   <p class="hint" style="margin-top:2rem;">
-    默认快捷键：<strong>Alt+Shift+Y</strong>（可在浏览器扩展管理页中修改）。
+    默认快捷键：<strong>Alt+Shift+Y</strong>（Mac 为 <strong>Option+Shift+Y</strong>，可在浏览器扩展管理页中修改）。
+    收藏成功时会在网页右上角显示绿色提示，并在扩展图标上显示约 4 秒「OK」角标（请将扩展<strong>固定到工具栏</strong>以便看到角标）；系统通知若被关闭也不影响以上反馈。
   </p>
   <script src="options.js"></script>
 </body>

@@ -7,7 +7,13 @@
     "48": "icon48.png",
     "128": "icon48.png"
   },
-  "permissions": ["storage", "activeTab", "notifications"],
+  "permissions": ["storage", "activeTab", "notifications", "scripting"],
+  "action": {
+    "default_title": "LinkLantern 快捷收藏",
+    "default_icon": {
+      "48": "icon48.png"
+    }
+  },
   "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js"
