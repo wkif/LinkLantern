@@ -93,10 +93,10 @@ const handleLogin = async () => {
       class="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-primary-950 dark:via-secondary-900 dark:to-primary-900">
       <!-- 装饰性圆形 -->
       <div
-        class="absolute top-0 left-0 w-96 h-96 bg-primary-200/30 dark:bg-primary-800/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2">
+        class="absolute top-0 left-0 w-80 h-80 bg-primary-200/25 dark:bg-primary-800/15 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2">
       </div>
       <div
-        class="absolute bottom-0 right-0 w-96 h-96 bg-accent-200/40 dark:bg-accent-900/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2">
+        class="absolute bottom-0 right-0 w-80 h-80 bg-accent-200/25 dark:bg-accent-900/20 rounded-full blur-2xl translate-x-1/2 translate-y-1/2">
       </div>
       <div
         class="absolute top-1/2 left-1/2 w-72 h-72 bg-secondary-200/20 dark:bg-secondary-800/20 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2">
@@ -111,14 +111,14 @@ const handleLogin = async () => {
           <img
             :src="logoImg"
             alt="LinkLantern"
-            class="h-24 w-auto mx-auto mb-4 object-contain animate-bounce-slow"
+            class="h-24 w-auto mx-auto mb-4 object-contain"
           />
           <p class="text-secondary-600 dark:text-secondary-300 text-lg font-medium">欢迎回来！登录您的账户</p>
         </div>
 
         <!-- 登录表单卡片 -->
         <UCard
-          class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2   dark:border-primary-700 animate-slide-up">
+          class="backdrop-blur-sm bg-white/90 dark:bg-primary-800/90 shadow-xl border-2   dark:border-primary-700 animate-slide-up">
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-semibold dark:text-primary-300">登录</h2>
@@ -132,7 +132,7 @@ const handleLogin = async () => {
               <UFormGroup label="邮箱地址" :error="errors.email">
                 <UInput v-model="form.email" type="email" placeholder="your@email.com" size="xl" icon="i-mdi-email"
                   :disabled="loading" @input="errors.email = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]" />
+                  class="transition-colors duration-200" />
               </UFormGroup>
             </div>
 
@@ -141,7 +141,7 @@ const handleLogin = async () => {
               <UFormGroup label="密码" :error="errors.password">
                 <UInput v-model="form.password" type="password" placeholder="••••••••" size="xl" icon="i-mdi-lock"
                   :disabled="loading" @input="errors.password = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]" />
+                  class="transition-colors duration-200" />
               </UFormGroup>
             </div>
 
@@ -156,7 +156,7 @@ const handleLogin = async () => {
             <!-- 登录按钮 -->
             <div class="pt-2">
               <UButton type="submit" size="xl" block :loading="loading" :disabled="loading"
-                class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 font-bold">
+                class="btn-accent transition-colors duration-200 shadow-lg font-bold">
                 <span class="flex items-center justify-center gap-2">
                   <UIcon v-if="!loading" name="i-mdi-login" />
                   <span>{{ loading ? '登录中...' : '立即登录' }}</span>
@@ -169,7 +169,7 @@ const handleLogin = async () => {
         <!-- 注册链接 -->
         <div class="mt-8 text-center animate-fade-in-delayed">
           <div
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border   dark:border-primary-700">
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/85 dark:bg-primary-800/85 backdrop-blur-sm shadow-md border   dark:border-primary-700">
             <span class="text-secondary-600 dark:text-secondary-300">还没有账户？</span>
             <UButton variant="link" to="/register"
               class="font-semibold text-primary-600 dark:text-accent-400 hover:text-accent-500">
@@ -226,18 +226,6 @@ const handleLogin = async () => {
   }
 }
 
-@keyframes bounce-slow {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 .animate-fade-in {
   animation: fade-in 0.6s ease-out;
 }
@@ -250,7 +238,4 @@ const handleLogin = async () => {
   animation: slide-up 0.6s ease-out 0.1s both;
 }
 
-.animate-bounce-slow {
-  animation: bounce-slow 3s ease-in-out infinite;
-}
 </style>

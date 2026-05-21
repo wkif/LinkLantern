@@ -14,15 +14,8 @@ const icon = computed(() => {
 </script>
 
 <template>
-  <UButton :icon="icon" size="lg" variant="ghost" @click="toggleColorMode"
-    class="transition-all duration-300 hover:scale-110 btn-accent">
-    深色模式
+  <UButton :icon="icon" size="lg" variant="ghost" :aria-label="colorMode.value === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+    @click="toggleColorMode" class="min-h-11 transition-colors duration-200 btn-accent">
+    <span class="hidden sm:inline">深色模式</span>
   </UButton>
 </template>
-
-<style scoped>
-/* 平滑的旋转过渡 */
-button {
-  transition: transform 0.5s ease-in-out;
-}
-</style>

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-21T16:50:00+08:00",
+  "title": "Design System: LinkLantern",
+  "extensions": {
+    "colorMeta": {
+      "primary-500": {
+        "role": "primary",
+        "displayName": "Link Plum",
+        "canonical": "#563950",
+        "tonalRamp": ["#180c14", "#241520", "#311e2c", "#3d2738", "#4a3044", "#563950", "#af8fa7", "#f5f1f4"]
+      },
+      "accent-500": {
+        "role": "secondary",
+        "displayName": "Signal Glow",
+        "canonical": "#FAED25",
+        "tonalRamp": ["#3c3908", "#625d0d", "#888113", "#aea519", "#d4c91f", "#FAED25", "#fff3ad", "#fffef5"]
+      },
+      "secondary-500": {
+        "role": "neutral",
+        "displayName": "Quiet Mauve",
+        "canonical": "#5B5561",
+        "tonalRamp": ["#171517", "#252225", "#322f34", "#403c43", "#4d4852", "#5B5561", "#b7b3b9", "#f6f5f6"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#171517", "#322f34", "#5B5561", "#b7b3b9", "#dbd9dc", "#edecee", "#f6f5f6", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page-level headings and primary dashboard greetings."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Major panels, empty-state titles, and hero-like product moments."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card headers, form section titles, and modal titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Standard prose, descriptions, and form copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Button text, field labels, table headers, badges, and metadata."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-hover-lift",
+        "value": "0 12px 24px rgba(86, 57, 80, 0.15)",
+        "purpose": "Interactive cards that open links or reveal a clear action."
+      },
+      {
+        "name": "primary-button-hover",
+        "value": "0 4px 12px rgba(86, 57, 80, 0.3)",
+        "purpose": "Primary action confidence on hover."
+      },
+      {
+        "name": "signal-glow",
+        "value": "0 8px 20px rgba(250, 237, 37, 0.4)",
+        "purpose": "Rare accent CTAs and floating moments."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "200ms-300ms ease-out",
+        "purpose": "Default hover, focus, tab, and panel state transitions."
+      },
+      {
+        "name": "fade-in",
+        "value": "0.6s ease-out",
+        "purpose": "Light page and panel entrance."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The standard Link Plum action button for create, save, search, and submit actions.",
+      "html": "<button class=\"ds-btn-primary\">Add Link</button>",
+      "css": ".ds-btn-primary { background: #563950; color: #ffffff; border: 0; border-radius: 12px; padding: 10px 16px; font-family: MiSans, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 600; line-height: 1.25; cursor: pointer; transition: background-color 0.25s ease-out, box-shadow 0.25s ease-out, transform 0.25s ease-out; } .ds-btn-primary:hover { background: #4a3044; box-shadow: 0 4px 12px rgba(86, 57, 80, 0.3); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: 3px solid rgba(195, 171, 189, 0.65); outline-offset: 2px; }"
+    },
+    {
+      "name": "Accent CTA",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "The rare Signal Glow CTA for the most important local action.",
+      "html": "<button class=\"ds-btn-accent\">Start Collecting</button>",
+      "css": ".ds-btn-accent { background: #FAED25; color: #3d2738; border: 0; border-radius: 12px; padding: 12px 24px; font-family: MiSans, ui-sans-serif, system-ui, sans-serif; font-size: 16px; font-weight: 700; line-height: 1.25; cursor: pointer; transition: background-color 0.25s ease-out, box-shadow 0.25s ease-out, transform 0.25s ease-out; } .ds-btn-accent:hover { background: #fff3ad; box-shadow: 0 8px 20px rgba(250, 237, 37, 0.4); transform: scale(1.03); } .ds-btn-accent:focus-visible { outline: 3px solid rgba(86, 57, 80, 0.55); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "A rounded input for search, forms, and configuration fields.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Search links</span><input class=\"ds-input\" placeholder=\"Search bookmarks, tools, or notes\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; font-family: MiSans, ui-sans-serif, system-ui, sans-serif; color: #252225; } .ds-label { font-size: 14px; font-weight: 500; color: #5B5561; } .ds-input { min-height: 44px; border: 1px solid #dbd9dc; border-radius: 12px; background: #ffffff; color: #252225; padding: 12px 16px; font-size: 16px; transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out; } .ds-input:focus { outline: none; border-color: #563950; box-shadow: 0 0 0 3px rgba(195, 171, 189, 0.4); }"
+    },
+    {
+      "name": "Link Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "A warm rounded card for saved links, public recommendations, and empty states.",
+      "html": "<article class=\"ds-link-card\"><div class=\"ds-icon\">L</div><div class=\"ds-link-body\"><h3>Design Reference</h3><p>A saved resource with a compact description and category metadata.</p><span>Curated</span></div></article>",
+      "css": ".ds-link-card { display: flex; gap: 12px; align-items: flex-start; background: #ffffff; color: #252225; border: 1px solid #ebe3e9; border-radius: 24px; padding: 16px; font-family: MiSans, ui-sans-serif, system-ui, sans-serif; box-shadow: 0 1px 2px rgba(86, 57, 80, 0.06); transition: box-shadow 0.25s ease-out, transform 0.25s ease-out, border-color 0.25s ease-out; } .ds-link-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(86, 57, 80, 0.15); border-color: #d7c7d3; } .ds-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, #f5f1f4, #fff9d6); color: #563950; font-weight: 700; flex: none; } .ds-link-body h3 { margin: 0 0 4px; font-size: 16px; line-height: 1.3; font-weight: 600; } .ds-link-body p { margin: 0 0 10px; font-size: 14px; line-height: 1.45; color: #5B5561; } .ds-link-body span { display: inline-flex; border-radius: 9999px; background: #f6f5f6; color: #4d4852; padding: 4px 8px; font-size: 12px; font-weight: 500; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "chip-status",
+      "description": "A compact text-plus-icon status chip for public/private or category states.",
+      "html": "<span class=\"ds-badge\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 0 1 6.93 4h-3.1a12.4 12.4 0 0 0-1.5-3.15A7.98 7.98 0 0 1 12 4Zm-2.33.85A12.4 12.4 0 0 0 8.17 8h-3.1a8.03 8.03 0 0 1 4.6-3.15ZM4.26 10h3.5A16.4 16.4 0 0 0 7.67 12c0 .68.03 1.35.1 2h-3.5A8.1 8.1 0 0 1 4 12c0-.69.09-1.36.26-2Zm5.52 0h4.44c.08.64.11 1.31.11 2s-.03 1.36-.11 2H9.78A14.4 14.4 0 0 1 9.67 12c0-.69.03-1.36.11-2Zm6.45 0h3.5c.18.64.27 1.31.27 2s-.09 1.36-.26 2h-3.51c.07-.65.1-1.32.1-2s-.03-1.35-.1-2ZM5.07 16h3.1c.35 1.25.86 2.33 1.5 3.15A8.03 8.03 0 0 1 5.07 16Zm4.71 0h4.44c-.47 2.3-1.32 4-2.22 4s-1.75-1.7-2.22-4Zm6.05 0h3.1a8.03 8.03 0 0 1-4.6 3.15c.64-.82 1.15-1.9 1.5-3.15ZM9.78 8c.47-2.3 1.32-4 2.22-4s1.75 1.7 2.22 4H9.78Z\" /></svg>Public</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; background: #f5f1f4; color: #3d2738; padding: 4px 10px; font-family: MiSans, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 600; line-height: 1.25; } .ds-badge svg { width: 14px; height: 14px; fill: currentColor; }"
+    },
+    {
+      "name": "Admin Navigation Item",
+      "kind": "nav",
+      "refersTo": "nav-active",
+      "description": "Sidebar navigation with a warm active fill and compact label rhythm.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-active\" href=\"#\">Overview</a><a class=\"ds-nav-item\" href=\"#\">Links</a><a class=\"ds-nav-item\" href=\"#\">Settings</a></nav>",
+      "css": ".ds-nav { display: grid; gap: 4px; width: 220px; padding: 8px; border: 1px solid #ebe3e9; border-radius: 16px; background: rgba(255, 255, 255, 0.9); font-family: MiSans, ui-sans-serif, system-ui, sans-serif; } .ds-nav-item { display: flex; align-items: center; min-height: 40px; border-radius: 10px; padding: 8px 12px; color: #4d4852; text-decoration: none; font-size: 14px; font-weight: 500; transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out; } .ds-nav-item:hover { background: #f5f1f4; color: #3d2738; } .ds-nav-item.ds-active { background: linear-gradient(135deg, #563950, #5B5561); color: #ffffff; box-shadow: 0 4px 12px rgba(86, 57, 80, 0.2); } .ds-nav-item:focus-visible { outline: 3px solid rgba(195, 171, 189, 0.65); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Curated Hearth",
+    "overview": "LinkLantern should feel like a warm place where useful paths gather: personal, searchable, and ready without ceremony. The system is product-first, so familiar controls do the work; personality arrives through a remembered palette, soft surfaces, and small moments of feedback.\n\nThe visual system must honor the product promise from `PRODUCT.md`: fast paths first, personal lantern, and calm over clutter. It explicitly rejects template SaaS aesthetics, noisy portal density, and cold admin-console grayness. Even management screens should retain a sense of ownership without turning into decoration.",
+    "keyCharacteristics": [
+      "Warm product utility with a personal, curated atmosphere.",
+      "Restrained surfaces, rounded controls, and clear task hierarchy.",
+      "Signal color used sparingly for primary calls to action and moments of confirmation.",
+      "Dense link and admin screens structured through tables, tabs, filters, and progressive disclosure."
+    ],
+    "rules": [
+      {
+        "name": "The Signal Rarity Rule",
+        "body": "Signal Glow is for actions and feedback, not decoration. If more than one area on a screen is shouting yellow, the screen is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plum Instead of Blue Rule",
+        "body": "LinkLantern should not default to generic blue-purple SaaS color habits. Blue can appear in legacy utility states, but new primary product language belongs to Link Plum and Quiet Mauve.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Sans Rule",
+        "body": "Product UI stays on MiSans. Do not introduce display fonts for labels, buttons, tables, or admin navigation.",
+        "section": "typography"
+      },
+      {
+        "name": "The Soft Layer Rule",
+        "body": "Surfaces can blur and lift only when that helps focus or state. Decorative glassmorphism is forbidden.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Link Plum for primary action, active navigation, and selected state.",
+      "Do keep Signal Glow rare: one main CTA or feedback moment per local surface.",
+      "Do preserve the Curated Hearth mood: warm, personal, and efficient.",
+      "Do keep link-heavy screens dense but ordered through filters, tabs, tables, and empty states.",
+      "Do support WCAG AA with visible focus, readable contrast, and text/icon pairs for public and private states."
+    ],
+    "donts": [
+      "Don't drift into template SaaS aesthetics: generic blue-purple gradients, oversized marketing cards, empty claims, or decorative hero-metric patterns.",
+      "Don't create noisy portal design with too many competing modules, ad-like density, or scattered focal points.",
+      "Don't become a cold admin console of gray tables and forms; preserve personal warmth even in management screens.",
+      "Don't use decorative glassmorphism as the default. Blur must clarify layering or focus.",
+      "Don't use gradient text or side-stripe borders as decoration.",
+      "Don't let bounce, glow, or breathing animations run on core task controls unless they communicate state."
+    ]
+  }
+}

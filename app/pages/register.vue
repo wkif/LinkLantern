@@ -155,9 +155,9 @@ const handleRegister = async () => {
     <!-- 背景装饰 -->
     <div class="absolute inset-0 bg-gradient-to-br from-accent-50 via-white to-primary-50 dark:from-secondary-950 dark:via-primary-900 dark:to-secondary-900">
       <!-- 装饰性圆形 -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-accent-200/40 dark:bg-accent-900/30 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
-      <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-200/30 dark:bg-primary-800/20 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
-      <div class="absolute top-1/2 left-1/2 w-96 h-96 bg-secondary-200/20 dark:bg-secondary-800/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div class="absolute top-0 right-0 w-80 h-80 bg-accent-200/25 dark:bg-accent-900/20 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2"></div>
+      <div class="absolute bottom-0 left-0 w-80 h-80 bg-primary-200/25 dark:bg-primary-800/15 rounded-full blur-2xl -translate-x-1/2 translate-y-1/2"></div>
+      <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-secondary-200/15 dark:bg-secondary-800/15 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
     </div>
 
     <!-- 内容区域 -->
@@ -168,13 +168,13 @@ const handleRegister = async () => {
           <img
             :src="logoImg"
             alt="LinkLantern"
-            class="h-24 w-auto mx-auto mb-4 object-contain animate-bounce-slow"
+            class="h-24 w-auto mx-auto mb-4 object-contain"
           />
           <p class="text-secondary-600 dark:text-secondary-300 text-lg font-medium">开始您的导航之旅</p>
         </div>
 
         <!-- 注册表单卡片 -->
-        <UCard class="backdrop-blur-md bg-white/90 dark:bg-primary-800/90 shadow-2xl border-2 dark:border-primary-700 animate-slide-up">
+        <UCard class="backdrop-blur-sm bg-white/90 dark:bg-primary-800/90 shadow-xl border-2 dark:border-primary-700 animate-slide-up">
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-semibold dark:text-primary-300">创建账户</h2>
@@ -194,7 +194,7 @@ const handleRegister = async () => {
                   icon="i-mdi-email"
                   :disabled="loading"
                   @input="errors.email = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]"
+                  class="transition-colors duration-200"
                 />
               </UFormGroup>
             </div>
@@ -213,7 +213,7 @@ const handleRegister = async () => {
                   icon="i-mdi-account"
                   :disabled="loading"
                   @input="errors.name = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]"
+                  class="transition-colors duration-200"
                 />
               </UFormGroup>
             </div>
@@ -229,7 +229,7 @@ const handleRegister = async () => {
                   icon="i-mdi-lock"
                   :disabled="loading"
                   @input="errors.password = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]"
+                  class="transition-colors duration-200"
                 />
                 <!-- 密码强度指示器 - 增强版 -->
                 <div v-if="form.password" class="mt-3 space-y-2">
@@ -295,7 +295,7 @@ const handleRegister = async () => {
                   icon="i-mdi-lock-check"
                   :disabled="loading"
                   @input="errors.confirmPassword = ''"
-                  class="transition-all duration-300 focus:scale-[1.01]"
+                  class="transition-colors duration-200"
                 >
                   <template v-if="form.confirmPassword && form.password === form.confirmPassword" #trailing>
                     <UIcon name="i-mdi-check-circle" class="text-green-500" />
@@ -339,7 +339,7 @@ const handleRegister = async () => {
                 block
                 :loading="loading"
                 :disabled="loading"
-                class="btn-accent transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 font-bold"
+                class="btn-accent transition-colors duration-200 shadow-lg font-bold"
               >
                 <span class="flex items-center justify-center gap-2">
                   <UIcon v-if="!loading" name="i-mdi-rocket-launch" />
@@ -352,7 +352,7 @@ const handleRegister = async () => {
 
         <!-- 登录链接 -->
         <div class="mt-8 text-center animate-fade-in-delayed">
-          <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/80 dark:bg-primary-800/80 backdrop-blur-md shadow-lg border dark:border-primary-700">
+          <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/85 dark:bg-primary-800/85 backdrop-blur-sm shadow-md border dark:border-primary-700">
             <span class="text-secondary-600 dark:text-secondary-300">已经有账户了？</span>
             <UButton
               variant="link"
@@ -399,15 +399,6 @@ const handleRegister = async () => {
   }
 }
 
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 .animate-fade-in {
   animation: fade-in 0.6s ease-out;
 }
@@ -420,8 +411,5 @@ const handleRegister = async () => {
   animation: slide-up 0.6s ease-out 0.1s both;
 }
 
-.animate-bounce-slow {
-  animation: bounce-slow 3s ease-in-out infinite;
-}
 </style>
 

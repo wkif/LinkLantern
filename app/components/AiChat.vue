@@ -1,12 +1,13 @@
 <template>
-  <div class="ai-chat-container flex h-[600px] min-h-[400px]">
+  <div class="ai-chat-container flex min-h-[70dvh] flex-col overflow-hidden lg:h-[600px] lg:min-h-[400px] lg:flex-row">
     <!-- 话题侧栏 -->
-    <aside class="ai-chat-sidebar w-52 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700">
+    <aside class="ai-chat-sidebar flex max-h-44 w-full shrink-0 flex-col border-b border-gray-200 dark:border-gray-700 lg:max-h-none lg:w-52 lg:border-b-0 lg:border-r">
       <div class="p-2 border-b border-gray-200 dark:border-gray-700">
         <UButton
           block
           size="sm"
           color="primary"
+          class="min-h-11"
           :disabled="streaming"
           @click="handleNewTopic"
         >
@@ -21,7 +22,7 @@
           v-for="c in conversations"
           :key="c.id"
           type="button"
-          class="w-full text-left rounded-lg px-2 py-2 text-sm transition-colors group flex items-start gap-1"
+          class="group flex min-h-11 w-full items-start gap-1 rounded-lg px-2 py-2 text-left text-sm transition-colors"
           :class="activeConversationId === c.id
             ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-200'
             : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'"
@@ -33,7 +34,8 @@
             color="neutral"
             variant="ghost"
             icon="i-mdi-delete-outline"
-            class="shrink-0 opacity-0 group-hover:opacity-100"
+            :aria-label="`删除话题：${c.title}`"
+            class="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
             :disabled="streaming"
             @click.stop="handleDeleteTopic(c.id)"
           />
@@ -45,12 +47,12 @@
     </aside>
 
     <!-- 主聊天区 -->
-    <div class="flex flex-col flex-1 min-w-0">
+    <div class="flex min-h-0 flex-1 flex-col">
     <!-- 对话所用 AI 配置（可切换，与后台「默认激活」独立） -->
     <div class="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/50">
       <span class="text-xs font-medium text-gray-600 dark:text-gray-400 shrink-0">对话配置</span>
       <select
-        class="flex-1 min-w-[10rem] max-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+        class="min-h-10 min-w-0 flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100 sm:min-w-[10rem] sm:max-w-md"
         :value="chatConfigId ?? ''"
         :disabled="streaming || !configs.length"
         @change="onChatConfigSelect(($event.target as HTMLSelectElement).value)"
@@ -77,7 +79,7 @@
     </div>
 
     <!-- 聊天消息区域 -->
-    <div ref="messagesContainerRef" class="flex-1 overflow-y-auto p-4 space-y-4">
+    <div ref="messagesContainerRef" class="min-h-0 flex-1 overflow-y-auto p-3 space-y-4 sm:p-4">
       <!-- 欢迎消息 -->
       <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full text-center py-12">
         <div class="bg-primary-100 dark:bg-primary-900/30 rounded-full p-6 mb-4">
@@ -117,7 +119,7 @@
 
         <!-- 消息内容 -->
         <div
-          class="max-w-[80%] rounded-2xl px-4 py-3 min-w-0"
+          class="max-w-[92%] rounded-2xl px-4 py-3 min-w-0 sm:max-w-[80%]"
           :class="message.role === 'user'
             ? 'bg-primary-500 text-white'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'"
@@ -159,20 +161,20 @@
     </div>
 
     <!-- 输入区域 -->
-    <div class="border-t border-gray-200 dark:border-gray-700 p-4">
-      <div class="flex items-end gap-2">
+    <div class="border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+      <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
         <UTextarea
           v-model="inputMessage"
           placeholder="输入消息…（Enter 发送，Shift+Enter 换行）"
           :rows="4"
-          class="flex-1 min-w-0"
+          class="min-w-0 flex-1"
           size="lg"
           :disabled="chatConfigId == null || streaming"
           @keydown.enter.exact.prevent="handleSend"
         />
         <UButton
           size="lg"
-          class="shrink-0"
+          class="min-h-11 shrink-0 justify-center"
           :disabled="!inputMessage.trim() || chatConfigId == null || streaming"
           @click="handleSend"
         >
@@ -343,13 +345,16 @@ const handleSend = async () => {
 }
 .ai-md :deep(blockquote) {
   margin: 0.5em 0;
-  padding-left: 0.75rem;
-  border-left: 3px solid rgb(86 57 80 / 0.35);
-  color: rgb(107 114 128);
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgb(215 199 211 / 0.85);
+  border-radius: 0.75rem;
+  background: rgb(245 241 244 / 0.7);
+  color: rgb(77 72 82);
 }
 :deep(.dark) .ai-md :deep(blockquote) {
-  border-left-color: rgb(195 171 189 / 0.5);
-  color: rgb(156 163 175);
+  border-color: rgb(195 171 189 / 0.35);
+  background: rgb(49 30 44 / 0.35);
+  color: rgb(201 198 203);
 }
 .ai-md :deep(pre) {
   margin: 0.5em 0;

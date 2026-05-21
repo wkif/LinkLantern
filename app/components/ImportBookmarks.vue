@@ -317,13 +317,13 @@ defineExpose({
               </UCard>
               <UCard>
                 <div class="text-center">
-                  <p class="text-2xl font-bold text-green-600">{{ categoryCount }}</p>
+                  <p class="text-2xl font-bold text-secondary-700 dark:text-secondary-300">{{ categoryCount }}</p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">分类数量</p>
                 </div>
               </UCard>
               <UCard>
                 <div class="text-center">
-                  <p class="text-2xl font-bold text-blue-600">{{ iconCount }}</p>
+                  <p class="text-2xl font-bold text-primary-600 dark:text-primary-300">{{ iconCount }}</p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">含图标</p>
                 </div>
               </UCard>

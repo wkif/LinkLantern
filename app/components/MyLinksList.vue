@@ -152,8 +152,8 @@ onMounted(() => {
     <!-- 空状态 -->
     <div v-else-if="links.length === 0" class="text-center py-20">
       <div
-        class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-2xl mb-6">
-        <UIcon name="i-mdi-link-variant-off" class="text-5xl text-gray-400" />
+        class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/50 dark:to-accent-950 rounded-2xl mb-6">
+        <UIcon name="i-mdi-link-variant-off" class="text-5xl text-primary-400 dark:text-primary-300" />
       </div>
       <h3 class="text-xl font-semibold mb-2">还没有链接</h3>
       <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
@@ -181,7 +181,7 @@ onMounted(() => {
             <!-- 图标和标题 -->
             <div class="flex items-start gap-3 mb-3">
               <div
-                class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
+                class="w-12 h-12 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/50 dark:to-accent-950 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors shadow-sm">
                 <img 
                   v-if="link.icon" 
                   :src="link.icon" 
@@ -189,7 +189,7 @@ onMounted(() => {
                   class="w-8 h-8 rounded"
                   @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" 
                 />
-                <UIcon v-else name="i-mdi-web" class="text-2xl text-blue-600 dark:text-blue-400" />
+                <UIcon v-else name="i-mdi-web" class="text-2xl text-primary-600 dark:text-primary-300" />
               </div>
               <div class="flex-1 min-w-0">
                 <h3

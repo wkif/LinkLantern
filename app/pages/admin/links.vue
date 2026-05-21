@@ -366,7 +366,7 @@ const formatDate = (date: string) => {
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
         <!-- 导入书签按钮 -->
         <ImportBookmarks @success="handleImportSuccess" />
         
@@ -375,6 +375,7 @@ const formatDate = (date: string) => {
           color="primary"
           icon="i-mdi-plus"
           size="lg"
+          class="justify-center"
           @click="openAddModal"
         >
           添加链接
@@ -416,10 +417,10 @@ const formatDate = (date: string) => {
       </div>
 
       <!-- 排序栏 -->
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex items-center gap-2">
+      <div class="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
           <span class="text-sm text-gray-600 dark:text-gray-400">排序方式：</span>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <UButton
               :variant="sortBy === 'createdAt' ? 'solid' : 'ghost'"
               :color="sortBy === 'createdAt' ? 'primary' : 'neutral'"
@@ -450,6 +451,7 @@ const formatDate = (date: string) => {
         <UButton
           :icon="sortOrder === 'asc' ? 'i-mdi-sort-ascending' : 'i-mdi-sort-descending'"
           size="sm"
+          class="justify-center sm:justify-start"
           @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
         >
           {{ sortOrder === 'asc' ? '升序' : '降序' }}
@@ -516,7 +518,7 @@ const formatDate = (date: string) => {
             >
               <!-- 图标 -->
               <td class="py-3 px-4">
-                <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg flex items-center justify-center">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/50 dark:to-accent-950 rounded-lg flex items-center justify-center">
                   <img
                     v-if="link.icon"
                     :src="link.icon"
@@ -524,7 +526,7 @@ const formatDate = (date: string) => {
                     class="w-6 h-6 rounded"
                     @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
                   />
-                  <UIcon v-else name="i-mdi-web" class="text-xl text-blue-600 dark:text-blue-400" />
+                  <UIcon v-else name="i-mdi-web" class="text-xl text-primary-600 dark:text-primary-300" />
                 </div>
               </td>
 
@@ -537,7 +539,7 @@ const formatDate = (date: string) => {
                   <a
                     :href="link.url"
                     target="_blank"
-                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
+                    class="text-xs text-primary-600 dark:text-primary-300 hover:underline truncate"
                   >
                     {{ link.url }}
                   </a>

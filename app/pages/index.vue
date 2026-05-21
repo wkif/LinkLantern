@@ -69,10 +69,40 @@ const suggestions = computed(() => {
 // Tab 状态管理（默认显示热榜，避免 hydration mismatch）
 const activeTab = ref<'links' | 'hotboard' | 'ai'>('hotboard')
 const currentHotboardType = ref('weibo')
+const tabOrder = ['links', 'hotboard', 'ai'] as const
 
 // 切换 Tab
 const switchTab = (tab: 'links' | 'hotboard' | 'ai') => {
   activeTab.value = tab
+}
+
+const focusActiveTab = () => {
+  if (!import.meta.client) return
+  document.getElementById(`home-tab-${activeTab.value}`)?.focus()
+}
+
+const handleTabKeydown = async (event: KeyboardEvent) => {
+  const currentIndex = tabOrder.indexOf(activeTab.value)
+  let nextIndex = currentIndex
+
+  if (event.key === 'ArrowRight') {
+    nextIndex = (currentIndex + 1) % tabOrder.length
+  } else if (event.key === 'ArrowLeft') {
+    nextIndex = (currentIndex - 1 + tabOrder.length) % tabOrder.length
+  } else if (event.key === 'Home') {
+    nextIndex = 0
+  } else if (event.key === 'End') {
+    nextIndex = tabOrder.length - 1
+  } else {
+    return
+  }
+
+  event.preventDefault()
+  const nextTab = tabOrder[nextIndex]
+  if (!nextTab) return
+  switchTab(nextTab)
+  await nextTick()
+  focusActiveTab()
 }
 
 // 处理搜索
@@ -171,18 +201,23 @@ watch(selectedEngine, () => {
 
 // 点击外部关闭建议
 const searchContainerRef = ref<HTMLElement | null>(null)
+const handleDocumentClick = (e: MouseEvent) => {
+  if (searchContainerRef.value && !searchContainerRef.value.contains(e.target as Node)) {
+    showSuggestions.value = false
+  }
+}
+
 onMounted(() => {
   if (process.client) {
-    document.addEventListener('click', (e) => {
-      if (searchContainerRef.value && !searchContainerRef.value.contains(e.target as Node)) {
-        showSuggestions.value = false
-      }
-    })
+    document.addEventListener('click', handleDocumentClick)
   }
 })
 
 // 清理定时器
 onUnmounted(() => {
+  if (process.client) {
+    document.removeEventListener('click', handleDocumentClick)
+  }
   if (fetchTimer) {
     clearTimeout(fetchTimer)
   }
@@ -245,25 +280,6 @@ const handlePublicLinkClick = (link: any) => {
 </script>
 
 <style scoped>
-/* Logo 动画 */
-@keyframes pulse-slow {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.9;
-    transform: scale(1.05);
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 3s ease-in-out infinite;
-}
-
 /* Tab 切换过渡 */
 .tab-fade-enter-active,
 .tab-fade-leave-active {
@@ -305,19 +321,19 @@ const handlePublicLinkClick = (link: any) => {
     </div>
 
     <!-- 主要内容区域 -->
-    <main class="container mx-auto px-4 py-8 animate-fade-in">
+    <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 animate-fade-in">
       <!-- 搜索区域 -->
-      <div class="max-w-4xl mx-auto mb-12 animate-fade-in-down">
+      <div class="mx-auto mb-10 max-w-5xl sm:mb-12 animate-fade-in-down">
         <!-- 搜索框 -->
         <div ref="searchContainerRef"
-          class="bg-white dark:bg-primary-800/50 rounded-2xl shadow-xl p-8 border-2 dark:border-primary-700 relative backdrop-blur-sm hover-lift z-50">
-          <form @submit.prevent="handleSearch()" class="space-y-4">
+          class="relative z-50 rounded-2xl border border-primary-100 bg-white/95 p-4 shadow-lg backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/70 sm:p-6 lg:p-8">
+          <form @submit.prevent="handleSearch()" class="space-y-4 sm:space-y-5">
             <!-- 搜索引擎选择 -->
-            <div class="flex flex-wrap items-center justify-center gap-2 mb-4 animate-fade-in animate-delay-100">
+            <div class="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 animate-fade-in animate-delay-100">
               <UButton v-for="engine in searchEngines" :key="engine.value"
                 :variant="selectedEngine === engine.value ? 'solid' : 'outline'"
                 :color="selectedEngine === engine.value ? 'primary' : 'neutral'" size="sm"
-                @click="selectedEngine = engine.value" class="transition-all duration-300 hover:scale-105">
+                @click="selectedEngine = engine.value" class="min-h-10 shrink-0 transition-colors duration-200">
                 <span class="flex items-center gap-2">
                   <UIcon :name="engine.icon" />
                   {{ engine.label }}
@@ -327,12 +343,15 @@ const handlePublicLinkClick = (link: any) => {
 
             <!-- 搜索输入框 -->
             <div class="relative animate-fade-in animate-delay-200">
-              <div class="flex gap-2">
+              <div class="flex flex-col gap-3 sm:flex-row sm:gap-2">
                 <UInput v-model="searchQuery" size="xl" placeholder="输入搜索内容，支持历史记录和链接匹配..."
-                  class="flex-1 transition-all duration-300 focus:scale-[1.02]" icon="i-mdi-magnify"
+                  class="min-w-0 flex-1 transition-colors duration-200" icon="i-mdi-magnify"
+                  role="combobox" aria-autocomplete="list" aria-controls="search-suggestions"
+                  :aria-expanded="showSuggestions && suggestions.length > 0"
+                  :aria-activedescendant="selectedSuggestionIndex >= 0 ? `search-suggestion-${selectedSuggestionIndex}` : undefined"
                   @focus="handleInputFocus" @input="handleInputChange" @keydown="handleKeyDown" />
                 <UButton type="submit" size="xl"
-                  class="btn-accent px-8 font-bold text-lg transition-all duration-300 hover:scale-105 hover-glow"
+                  class="btn-accent w-full justify-center px-8 font-bold text-lg transition-colors duration-200 sm:w-auto"
                   :disabled="!searchQuery.trim()">
                   <span class="flex items-center gap-2">
                     <UIcon name="i-mdi-magnify" class="text-2xl" />
@@ -342,54 +361,65 @@ const handlePublicLinkClick = (link: any) => {
               </div>
 
               <!-- 搜索建议下拉列表 -->
-              <div v-if="showSuggestions && suggestions.length > 0"
-                class="absolute top-full left-0 right-14 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-[100] max-h-96 overflow-y-auto">
+              <div v-if="showSuggestions && suggestions.length > 0" id="search-suggestions" role="listbox"
+                aria-label="搜索建议"
+                class="absolute top-full left-0 right-0 mt-2 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:right-14 z-[100]">
                 <!-- 建议列表 -->
                 <div class="py-2">
                   <div v-for="(suggestion, index) in suggestions"
                     :key="`${suggestion.type}-${suggestion.text}-${index}`"
-                    class="px-4 py-3 cursor-pointer transition-colors flex items-center justify-between gap-3 rounded-lg"
-                    :class="index === selectedSuggestionIndex
-                      ? 'ring-1 ring-primary-500/50 bg-primary-50 dark:bg-primary-900/30'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'" @click="handleSuggestionClick(suggestion)">
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                      <!-- 图标 -->
-                      <div class="flex-shrink-0">
-                        <img v-if="suggestion.type === 'link' && suggestion.icon && !suggestion.icon.startsWith('i-')"
-                          :src="suggestion.icon" class="w-6 h-6 rounded"
-                          @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
-                        <UIcon v-else :name="suggestion.icon || 'i-mdi-magnify'" class="text-xl" :class="{
-                          'text-gray-500': suggestion.type === 'history',
-                          'text-blue-500': suggestion.type === 'link',
-                          'text-primary': suggestion.type === 'suggestion',
-                        }" />
-                      </div>
-
-                      <!-- 文本内容 -->
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                          <span class="text-sm font-medium truncate">{{ suggestion.text }}</span>
-                          <UBadge v-if="suggestion.type === 'link'" size="xs" color="info" variant="subtle">
-                            链接
-                          </UBadge>
-                          <UBadge v-else-if="suggestion.type === 'history'" size="xs" color="neutral" variant="subtle">
-                            历史
-                          </UBadge>
-                          <UBadge v-else-if="suggestion.type === 'engine'" size="xs" color="primary" variant="subtle">
-                            {{searchEngines.find(e => e.value === selectedEngine)?.label}}
-                          </UBadge>
+                    class="flex items-center gap-2 px-2">
+                    <button
+                      :id="`search-suggestion-${index}`"
+                      type="button"
+                      role="option"
+                      :aria-selected="index === selectedSuggestionIndex"
+                      class="min-w-0 flex-1 rounded-lg px-2 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60"
+                      :class="index === selectedSuggestionIndex
+                        ? 'ring-1 ring-primary-500/50 bg-primary-50 dark:bg-primary-900/30'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'"
+                      @click="handleSuggestionClick(suggestion)"
+                    >
+                      <div class="flex items-center gap-3 min-w-0">
+                        <!-- 图标 -->
+                        <div class="flex-shrink-0">
+                          <img v-if="suggestion.type === 'link' && suggestion.icon && !suggestion.icon.startsWith('i-')"
+                            :src="suggestion.icon" :alt="`${suggestion.text} 图标`" class="w-6 h-6 rounded"
+                            @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
+                          <UIcon v-else :name="suggestion.icon || 'i-mdi-magnify'" class="text-xl" :class="{
+                            'text-gray-500': suggestion.type === 'history',
+                            'text-primary-500': suggestion.type === 'link',
+                            'text-primary': suggestion.type === 'suggestion',
+                          }" />
                         </div>
-                        <p v-if="suggestion.category" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                          {{ suggestion.category }}
-                        </p>
-                      </div>
 
-                      <!-- 操作按钮 -->
-                      <div class="flex-shrink-0">
-                        <UButton v-if="suggestion.type === 'history'" size="xs" color="neutral" variant="ghost"
-                          icon="i-mdi-close" @click="handleRemoveHistory(suggestion.text, $event)" />
-                        <UIcon v-else-if="suggestion.type === 'link'" name="i-mdi-open-in-new" class="text-gray-400" />
+                        <!-- 文本内容 -->
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium truncate">{{ suggestion.text }}</span>
+                            <UBadge v-if="suggestion.type === 'link'" size="xs" color="info" variant="subtle">
+                              链接
+                            </UBadge>
+                            <UBadge v-else-if="suggestion.type === 'history'" size="xs" color="neutral" variant="subtle">
+                              历史
+                            </UBadge>
+                            <UBadge v-else-if="suggestion.type === 'engine'" size="xs" color="primary" variant="subtle">
+                              {{searchEngines.find(e => e.value === selectedEngine)?.label}}
+                            </UBadge>
+                          </div>
+                          <p v-if="suggestion.category" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                            {{ suggestion.category }}
+                          </p>
+                        </div>
                       </div>
+                    </button>
+
+                    <!-- 操作按钮 -->
+                    <div class="flex-shrink-0 pr-2">
+                      <UButton v-if="suggestion.type === 'history'" size="xs" color="neutral" variant="ghost"
+                        icon="i-mdi-close" :aria-label="`删除历史记录：${suggestion.text}`"
+                        @click="handleRemoveHistory(suggestion.text, $event)" />
+                      <UIcon v-else-if="suggestion.type === 'link'" name="i-mdi-open-in-new" class="text-gray-400" />
                     </div>
                   </div>
                 </div>
@@ -425,11 +455,13 @@ const handlePublicLinkClick = (link: any) => {
       </div>
 
       <!-- 已登录用户：Tab 切换显示内容 -->
-      <div v-if="isLoggedIn" class="max-w-7xl mx-auto relative z-10 animate-fade-in-up animate-delay-300">
+      <div v-if="isLoggedIn" class="relative z-10 animate-fade-in-up animate-delay-300">
         <!-- Tab 导航 -->
-        <div class="flex items-center justify-between mb-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center gap-4">
-            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'links'
+        <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0" role="tablist" aria-label="首页内容" @keydown="handleTabKeydown">
+            <button id="home-tab-links" class="relative min-h-11 shrink-0 px-3 py-3 font-medium transition-colors sm:px-4" role="tab"
+              aria-controls="home-panel-links" :aria-selected="activeTab === 'links'" :tabindex="activeTab === 'links' ? 0 : -1"
+              :class="activeTab === 'links'
               ? 'text-primary border-b-2 border-primary'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               @click="switchTab('links')">
@@ -440,7 +472,9 @@ const handlePublicLinkClick = (link: any) => {
               </div>
             </button>
 
-            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'hotboard'
+            <button id="home-tab-hotboard" class="relative min-h-11 shrink-0 px-3 py-3 font-medium transition-colors sm:px-4" role="tab"
+              aria-controls="home-panel-hotboard" :aria-selected="activeTab === 'hotboard'" :tabindex="activeTab === 'hotboard' ? 0 : -1"
+              :class="activeTab === 'hotboard'
               ? 'text-primary border-b-2 border-primary'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               @click="switchTab('hotboard')">
@@ -450,7 +484,9 @@ const handlePublicLinkClick = (link: any) => {
               </div>
             </button>
 
-            <button class="px-4 py-3 font-medium transition-colors relative" :class="activeTab === 'ai'
+            <button id="home-tab-ai" class="relative min-h-11 shrink-0 px-3 py-3 font-medium transition-colors sm:px-4" role="tab"
+              aria-controls="home-panel-ai" :aria-selected="activeTab === 'ai'" :tabindex="activeTab === 'ai' ? 0 : -1"
+              :class="activeTab === 'ai'
               ? 'text-primary border-b-2 border-primary'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               @click="switchTab('ai')">
@@ -460,18 +496,17 @@ const handlePublicLinkClick = (link: any) => {
               </div>
             </button>
           </div>
-
-          </div>
+        </div>
         <!-- Tab 内容（带过渡） -->
         <Transition name="tab-fade" mode="out-in">
-          <div :key="activeTab">
-            <div v-if="activeTab === 'links'">
+          <div :key="activeTab" class="min-w-0">
+            <div v-if="activeTab === 'links'" id="home-panel-links" role="tabpanel" aria-labelledby="home-tab-links">
               <MyLinksList />
             </div>
-            <div v-else-if="activeTab === 'hotboard'">
+            <div v-else-if="activeTab === 'hotboard'" id="home-panel-hotboard" role="tabpanel" aria-labelledby="home-tab-hotboard">
               <HotboardList :default-platform="currentHotboardType" />
             </div>
-            <div v-else-if="activeTab === 'ai'">
+            <div v-else-if="activeTab === 'ai'" id="home-panel-ai" role="tabpanel" aria-labelledby="home-tab-ai">
               <AiChat />
             </div>
           </div>
@@ -481,25 +516,25 @@ const handlePublicLinkClick = (link: any) => {
       <!-- 未登录用户：显示功能介绍 -->
       <div v-else>
         <!-- Hero Section -->
-        <div class="text-center max-w-3xl mx-auto mb-12">
+        <div class="mx-auto mb-10 max-w-3xl text-center sm:mb-12">
           <img
             :src="logoImg"
             alt="LinkLantern"
-            class="h-20 w-auto mx-auto mb-6 object-contain animate-fade-in"
+            class="mx-auto mb-5 h-16 w-auto object-contain animate-fade-in sm:mb-6 sm:h-20"
           />
-          <h2 class="text-4xl md:text-5xl font-bold mb-3 text-gray-900 dark:text-white">
+          <h2 class="mb-3 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-5xl">
             个人网页导航
           </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
+          <p class="mx-auto mb-6 max-w-2xl text-base leading-relaxed text-gray-600 dark:text-gray-400 sm:mb-8 sm:text-xl">
             收藏和管理您最喜欢的网站链接，打造专属的个人导航页面
           </p>
 
           <!-- CTA 按钮 -->
-          <div class="flex items-center justify-center gap-4">
-            <UButton to="/register" size="xl" color="primary" icon="i-mdi-rocket-launch">
+          <div class="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <UButton to="/register" size="xl" color="primary" icon="i-mdi-rocket-launch" class="justify-center">
               立即开始
             </UButton>
-            <UButton to="/login" size="xl" variant="ghost" icon="i-mdi-login">
+            <UButton to="/login" size="xl" variant="ghost" icon="i-mdi-login" class="justify-center">
               登录账户
             </UButton>
           </div>
@@ -508,14 +543,14 @@ const handlePublicLinkClick = (link: any) => {
       </div>
 
       <!-- 网页推荐部分（所有用户都可见） -->
-      <div class="max-w-7xl mx-auto mt-12">
+      <div class="mt-10 sm:mt-12">
         <!-- 添加背景容器以提高可读性 -->
-        <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+        <div class="rounded-2xl border border-primary-100 bg-white/85 p-4 shadow-md backdrop-blur-sm dark:border-primary-800 dark:bg-primary-900/45 sm:p-6">
           <!-- 标题和控制栏 -->
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
+          <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="min-w-0">
               <h2 class="text-2xl font-bold mb-1 flex items-center gap-2">
-                <UIcon name="i-mdi-star-circle" class="text-yellow-500" />
+                <UIcon name="i-mdi-star-circle" class="text-accent-500" />
                 网页推荐
               </h2>
               <p class="text-gray-600 dark:text-gray-400">
@@ -524,16 +559,18 @@ const handlePublicLinkClick = (link: any) => {
             </div>
 
             <!-- 排序和筛选 -->
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <!-- 排序方式 -->
-              <div class="flex items-center gap-2">
+              <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
                 <UButton size="sm" :variant="publicSortBy === 'popular' ? 'solid' : 'outline'"
                   :color="publicSortBy === 'popular' ? 'primary' : 'neutral'" icon="i-mdi-fire"
+                  class="justify-center"
                   @click="handlePublicSortChange('popular')">
                   热门
                 </UButton>
                 <UButton size="sm" :variant="publicSortBy === 'recent' ? 'solid' : 'outline'"
                   :color="publicSortBy === 'recent' ? 'primary' : 'neutral'" icon="i-mdi-clock"
+                  class="justify-center"
                   @click="handlePublicSortChange('recent')">
                   最新
                 </UButton>
@@ -562,15 +599,15 @@ const handlePublicLinkClick = (link: any) => {
           </div>
 
           <!-- 推荐链接网格 -->
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             <UCard v-for="link in publicLinks" :key="link.id"
-              class="hover:shadow-lg transition-all duration-300 cursor-pointer group"
+              class="cursor-pointer group transition-shadow duration-200 hover:shadow-lg"
               @click="handlePublicLinkClick(link)">
               <div class="flex flex-col h-full">
                 <!-- 图标和标题 -->
                 <div class="flex items-start gap-3 mb-3">
                   <div
-                    class="w-12 h-12 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-800 dark:to-accent-900/30 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    class="w-12 h-12 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-800 dark:to-accent-900/30 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
                     <img v-if="link.icon" :src="link.icon" :alt="link.title" class="w-8 h-8 rounded"
                       @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
                     <UIcon v-else name="i-mdi-web" class="text-2xl text-primary-600 dark:text-primary-400" />
@@ -639,12 +676,12 @@ const handlePublicLinkClick = (link: any) => {
           <!-- 深色模式切换按钮 -->
           <ColorModeToggle />
 
-          <UButton to="/register" class="btn-accent shadow-2xl transition-all duration-300 hover:scale-105 hover-glow"
+          <UButton to="/register" class="btn-accent shadow-xl transition-colors duration-200"
             size="xl" icon="i-mdi-account-plus">
             注册
           </UButton>
           <UButton to="/login" color="primary" variant="solid" size="lg" icon="i-mdi-login"
-            class="shadow-xl transition-all duration-300 hover:scale-105">
+            class="shadow-lg transition-colors duration-200">
             登录
           </UButton>
         </div>
@@ -655,8 +692,8 @@ const handlePublicLinkClick = (link: any) => {
         <div class="relative flex items-center justify-center">
           <!-- 主菜单按钮 -->
           <UButton @click="showFloatingMenu = !showFloatingMenu"
-            class="w-16 h-16 rounded-full shadow-2xl gradient-bg hover:scale-110 transition-all duration-300 flex items-center justify-center p-0 animate-breathe"
-            :class="{ 'ring-4 ring-accent-400 animate-glow': showFloatingMenu }">
+            class="w-16 h-16 rounded-full shadow-xl gradient-bg transition-shadow duration-200 flex items-center justify-center p-0"
+            :class="{ 'ring-4 ring-accent-400': showFloatingMenu }">
             <UAvatar :src="user?.avatar" :alt="user?.name || user?.email" size="md"
               class="flex items-center justify-center bg-58495A">
               <template v-if="!user?.avatar">
@@ -687,17 +724,17 @@ const handlePublicLinkClick = (link: any) => {
 
                 <div class="space-y-2 mt-3">
                   <UButton to="/admin" variant="soft" color="primary" block icon="i-mdi-view-dashboard"
-                    @click="showFloatingMenu = false" class="transition-all duration-200 hover:scale-[1.02]">
+                    @click="showFloatingMenu = false" class="transition-colors duration-200">
                     管理后台
                   </UButton>
 
                   <UButton to="/admin/links" variant="soft" color="primary" block icon="i-mdi-link-variant"
-                    @click="showFloatingMenu = false" class="transition-all duration-200 hover:scale-[1.02]">
+                    @click="showFloatingMenu = false" class="transition-colors duration-200">
                     我的链接
                   </UButton>
 
                   <UButton to="/admin/profile" variant="soft" color="primary" block icon="i-mdi-account"
-                    @click="showFloatingMenu = false" class="transition-all duration-200 hover:scale-[1.02]">
+                    @click="showFloatingMenu = false" class="transition-colors duration-200">
                     个人信息
                   </UButton>
 
@@ -711,7 +748,7 @@ const handlePublicLinkClick = (link: any) => {
                   <UDivider />
 
                   <UButton variant="soft" color="error" block icon="i-mdi-logout" @click="handleLogout"
-                    class="transition-all duration-200 hover:scale-[1.02]">
+                    class="transition-colors duration-200">
                     退出登录
                   </UButton>
                 </div>

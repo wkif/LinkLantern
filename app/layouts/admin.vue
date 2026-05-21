@@ -3,26 +3,26 @@
     <!-- 顶部导航栏 -->
     <header class="bg-white/80 dark:bg-primary-900/80 border-b border-primary-200 dark:border-primary-700 sticky top-0 z-50 backdrop-blur-md shadow-sm">
       <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex min-h-16 items-center justify-between gap-3 py-3">
           <!-- Logo 和标题 -->
-          <div class="flex items-center gap-4">
+          <div class="flex min-w-0 items-center gap-3">
             <NuxtLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img
                 :src="logoImg"
                 alt="LinkLantern"
                 class="h-8 w-auto object-contain"
               />
-              <span class="font-bold text-lg text-primary-700 dark:text-accent-400">LinkLantern</span>
+              <span class="hidden sm:inline font-bold text-lg text-primary-700 dark:text-accent-400">LinkLantern</span>
             </NuxtLink>
             <UBadge class="bg-accent-400 text-primary-900 font-semibold">管理后台</UBadge>
           </div>
 
           <!-- 用户菜单 -->
-          <div class="flex items-center gap-3">
+          <div class="flex shrink-0 items-center gap-2 sm:gap-3">
             <!-- 深色模式切换 -->
             <ColorModeToggle />
 
-            <UButton to="/" variant="soft" color="primary" icon="i-mdi-home" size="sm">
+            <UButton to="/" variant="soft" color="primary" icon="i-mdi-home" size="sm" class="min-h-10">
               返回首页
             </UButton>
 
@@ -49,18 +49,18 @@
       </div>
     </header>
 
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex gap-6">
+    <div class="container mx-auto px-4 py-4 sm:py-6">
+      <div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
         <!-- 侧边栏导航 -->
-        <aside class="w-64 flex-shrink-0">
+        <aside class="w-full flex-shrink-0 lg:w-64">
           <UCard class="backdrop-blur-sm bg-white/90 dark:bg-primary-800/90 border border-primary-200 dark:border-primary-700 shadow-lg">
-            <nav class="space-y-1">
+            <nav class="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0" aria-label="管理后台导航">
               <NuxtLink v-for="item in navItems" :key="item.path" :to="item.path"
-                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 card-hover" :class="isActivePath(item.path)
+                class="flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 transition-all duration-200 lg:w-full lg:gap-3 lg:px-4 card-hover" :class="isActivePath(item.path)
                   ? 'gradient-bg text-white font-semibold shadow-md'
                   : 'hover:bg-primary-50 dark:hover:bg-primary-700 text-secondary-700 dark:text-secondary-300'">
                 <UIcon :name="item.icon" class="text-xl" />
-                <span>{{ item.label }}</span>
+                <span class="whitespace-nowrap">{{ item.label }}</span>
                 <UBadge v-if="item.badge" class="ml-auto bg-accent-400 text-primary-900 font-bold" size="xs">
                   {{ item.badge }}
                 </UBadge>

@@ -295,17 +295,17 @@ const handleDeleteBackground = async () => {
 
     <div class="space-y-6">
       <!-- 必应壁纸开关 -->
-      <div class="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div class="p-4 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 rounded-lg">
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2">
-              <UIcon name="i-mdi-image-multiple" class="text-blue-600 dark:text-blue-400 text-xl" />
-              <h3 class="font-semibold text-blue-900 dark:text-blue-100">启用必应每日壁纸</h3>
+              <UIcon name="i-mdi-image-multiple" class="text-primary-600 dark:text-primary-300 text-xl" />
+              <h3 class="font-semibold text-primary-900 dark:text-primary-100">启用必应每日壁纸</h3>
             </div>
-            <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
+            <p class="text-sm text-primary-700 dark:text-primary-300 mb-2">
               每天自动使用必应搜索引擎的精美壁纸作为首页背景，无需手动上传。
             </p>
-            <p class="text-xs text-blue-600 dark:text-blue-400">
+            <p class="text-xs text-primary-600 dark:text-primary-300">
               ✨ 启用后将自动清除自定义背景，每次访问首页都会显示最新的必应壁纸。
             </p>
           </div>
@@ -318,7 +318,7 @@ const handleDeleteBackground = async () => {
                 @change="handleToggleBingWallpaper(($event.target as HTMLInputElement).checked)"
                 class="sr-only peer"
               />
-              <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              <div class="w-14 h-7 bg-secondary-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-700 rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-secondary-600 peer-checked:bg-primary-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
             </label>
           </div>
         </div>
@@ -362,8 +362,8 @@ const handleDeleteBackground = async () => {
           </div>
         </div>
 
-        <div v-else class="w-full h-48 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-600 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20">
-          <div class="text-center text-blue-600 dark:text-blue-400">
+        <div v-else class="w-full h-48 rounded-lg border-2 border-dashed border-primary-300 dark:border-primary-600 flex items-center justify-center bg-primary-50 dark:bg-primary-900/20">
+          <div class="text-center text-primary-600 dark:text-primary-300">
             <UIcon name="i-mdi-image-multiple" class="text-5xl mb-2" />
             <p class="text-sm font-medium">已启用必应每日壁纸</p>
             <p class="text-xs mt-1">首页将显示必应搜索的精美壁纸</p>

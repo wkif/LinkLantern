@@ -84,8 +84,8 @@ const formatRelativeTime = (date: string) => {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">总链接数</p>
             <p class="text-3xl font-bold">{{ stats.totalLinks }}</p>
           </div>
-          <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-            <UIcon name="i-mdi-link-variant" class="text-2xl text-blue-600 dark:text-blue-400" />
+          <div class="p-3 bg-primary-100 dark:bg-primary-900/40 rounded-lg">
+            <UIcon name="i-mdi-link-variant" class="text-2xl text-primary-600 dark:text-primary-300" />
           </div>
         </div>
       </UCard>
@@ -96,8 +96,8 @@ const formatRelativeTime = (date: string) => {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">公开链接</p>
             <p class="text-3xl font-bold">{{ stats.publicLinks }}</p>
           </div>
-          <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-            <UIcon name="i-mdi-earth" class="text-2xl text-green-600 dark:text-green-400" />
+          <div class="p-3 bg-secondary-100 dark:bg-secondary-800 rounded-lg">
+            <UIcon name="i-mdi-earth" class="text-2xl text-secondary-700 dark:text-secondary-300" />
           </div>
         </div>
       </UCard>
@@ -108,8 +108,8 @@ const formatRelativeTime = (date: string) => {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">总点击量</p>
             <p class="text-3xl font-bold">{{ stats.totalClicks }}</p>
           </div>
-          <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-            <UIcon name="i-mdi-chart-line" class="text-2xl text-purple-600 dark:text-purple-400" />
+          <div class="p-3 bg-primary-50 dark:bg-primary-900/30 rounded-lg">
+            <UIcon name="i-mdi-chart-line" class="text-2xl text-primary-500 dark:text-primary-300" />
           </div>
         </div>
       </UCard>
@@ -120,8 +120,8 @@ const formatRelativeTime = (date: string) => {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">分类数</p>
             <p class="text-3xl font-bold">{{ stats.categories }}</p>
           </div>
-          <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-            <UIcon name="i-mdi-tag-multiple" class="text-2xl text-yellow-600 dark:text-yellow-400" />
+          <div class="p-3 bg-accent-100 dark:bg-accent-950 rounded-lg">
+            <UIcon name="i-mdi-tag-multiple" class="text-2xl text-accent-700 dark:text-accent-300" />
           </div>
         </div>
       </UCard>
@@ -160,7 +160,7 @@ const formatRelativeTime = (date: string) => {
             :key="link.id"
             class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div class="w-10 h-10 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/50 dark:to-accent-950 rounded-lg flex items-center justify-center flex-shrink-0">
               <img
                 v-if="link.icon"
                 :src="link.icon"
@@ -168,7 +168,7 @@ const formatRelativeTime = (date: string) => {
                 class="w-6 h-6 rounded"
                 @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
               />
-              <UIcon v-else name="i-mdi-web" class="text-xl text-blue-600 dark:text-blue-400" />
+              <UIcon v-else name="i-mdi-web" class="text-xl text-primary-600 dark:text-primary-300" />
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-medium truncate">{{ link.title }}</h3>
@@ -212,7 +212,7 @@ const formatRelativeTime = (date: string) => {
             :key="link.id"
             class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
-            <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg">
+            <div class="w-10 h-10 bg-gradient-to-br from-accent-100 to-primary-100 dark:from-accent-950 dark:to-primary-900/50 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg text-primary-700 dark:text-accent-300">
               {{ index + 1 }}
             </div>
             <div class="flex-1 min-w-0">
