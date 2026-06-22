@@ -6,6 +6,9 @@ const { links, loading, fetchLinks, recordClick } = useLinks()
 // 分类筛选
 const selectedCategory = ref<string | null>(null)
 
+// 排序：默认创建时间（新→旧），可选访问量（高→低）
+const sortBy = ref<'createdAt' | 'clicks'>('createdAt')
+
 // 懒加载配置
 const pageSize = 20 // 每页显示20条
 const currentPage = ref(1)
@@ -24,10 +27,19 @@ const categories = computed(() => {
   return Array.from(cats).sort()
 })
 
-// 过滤后的链接
+// 过滤并排序后的链接
 const filteredLinks = computed(() => {
-  if (!selectedCategory.value) return links.value
-  return links.value.filter(link => link.category === selectedCategory.value)
+  let result = selectedCategory.value
+    ? links.value.filter(link => link.category === selectedCategory.value)
+    : [...links.value]
+
+  if (sortBy.value === 'clicks') {
+    result.sort((a, b) => b.clicks - a.clicks)
+  } else {
+    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
+
+  return result
 })
 
 // 加载更多链接
@@ -64,8 +76,8 @@ const resetLazyLoad = () => {
   loadMore()
 }
 
-// 监听过滤条件变化，重置列表
-watch(selectedCategory, () => {
+// 监听筛选或排序变化，重置列表
+watch([selectedCategory, sortBy], () => {
   resetLazyLoad()
 })
 
@@ -115,7 +127,7 @@ onMounted(() => {
 <template>
   <div class="my-links-container">
     <!-- 顶部工具栏 -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col gap-4 mb-6">
       <!-- 分类筛选 -->
       <div v-if="categories.length > 0" class="flex flex-wrap items-center gap-2">
         <UButton 
@@ -137,6 +149,32 @@ onMounted(() => {
           class="transition-all duration-200"
         >
           {{ cat }}
+        </UButton>
+      </div>
+
+      <!-- 排序（选择分类后或存在多个分类时显示） -->
+      <div
+        v-if="categories.length > 0"
+        class="flex flex-wrap items-center gap-2"
+      >
+        <span class="text-sm text-gray-600 dark:text-gray-400">排序：</span>
+        <UButton
+          size="sm"
+          :variant="sortBy === 'createdAt' ? 'solid' : 'outline'"
+          :color="sortBy === 'createdAt' ? 'primary' : 'neutral'"
+          icon="i-mdi-clock-outline"
+          @click="sortBy = 'createdAt'"
+        >
+          创建时间
+        </UButton>
+        <UButton
+          size="sm"
+          :variant="sortBy === 'clicks' ? 'solid' : 'outline'"
+          :color="sortBy === 'clicks' ? 'primary' : 'neutral'"
+          icon="i-mdi-chart-line"
+          @click="sortBy = 'clicks'"
+        >
+          访问量
         </UButton>
       </div>
     </div>
