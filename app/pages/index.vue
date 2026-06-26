@@ -67,12 +67,12 @@ const suggestions = computed(() => {
 })
 
 // Tab 状态管理（默认显示热榜，避免 hydration mismatch）
-const activeTab = ref<'links' | 'hotboard' | 'ai'>('hotboard')
+const activeTab = ref<'links' | 'hotboard'>('hotboard')
 const currentHotboardType = ref('weibo')
-const tabOrder = ['links', 'hotboard', 'ai'] as const
+const tabOrder = ['links', 'hotboard'] as const
 
 // 切换 Tab
-const switchTab = (tab: 'links' | 'hotboard' | 'ai') => {
+const switchTab = (tab: 'links' | 'hotboard') => {
   activeTab.value = tab
 }
 
@@ -483,18 +483,6 @@ const handlePublicLinkClick = (link: any) => {
                 <span>热点榜</span>
               </div>
             </button>
-
-            <button id="home-tab-ai" class="relative min-h-11 shrink-0 px-3 py-3 font-medium transition-colors sm:px-4" role="tab"
-              aria-controls="home-panel-ai" :aria-selected="activeTab === 'ai'" :tabindex="activeTab === 'ai' ? 0 : -1"
-              :class="activeTab === 'ai'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-              @click="switchTab('ai')">
-              <div class="flex items-center gap-2">
-                <UIcon name="i-mdi-robot" class="text-xl" />
-                <span>AI 对话</span>
-              </div>
-            </button>
           </div>
         </div>
         <!-- Tab 内容（带过渡） -->
@@ -503,11 +491,8 @@ const handlePublicLinkClick = (link: any) => {
             <div v-if="activeTab === 'links'" id="home-panel-links" role="tabpanel" aria-labelledby="home-tab-links">
               <MyLinksList />
             </div>
-            <div v-else-if="activeTab === 'hotboard'" id="home-panel-hotboard" role="tabpanel" aria-labelledby="home-tab-hotboard">
+            <div v-else id="home-panel-hotboard" role="tabpanel" aria-labelledby="home-tab-hotboard">
               <HotboardList :default-platform="currentHotboardType" />
-            </div>
-            <div v-else-if="activeTab === 'ai'" id="home-panel-ai" role="tabpanel" aria-labelledby="home-tab-ai">
-              <AiChat />
             </div>
           </div>
         </Transition>
