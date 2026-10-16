@@ -22,6 +22,7 @@ model User {
   useBingWallpaper      Boolean   @default(false)               // 是否启用必应壁纸
   backgroundOpacity     Int       @default(80)                  // 背景遮罩透明度 (0-100)
   backgroundBlur        Int       @default(8)                   // 背景模糊度 (0-20)
+  blockedKeywords       Json?     @default("[]")                // 热榜关键词屏蔽列表（string[]）
   isActive              Boolean   @default(true)                // 账户是否激活
   emailVerified         Boolean   @default(false)               // 邮箱是否验证
   lastLoginAt           DateTime?                               // 最后登录时间

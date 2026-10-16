@@ -111,6 +111,11 @@ const navItems = computed(() => [
     badgeColor: 'primary',
   },
   {
+    path: '/admin/blocked-keywords',
+    icon: 'i-mdi-cancel',
+    label: '关键词屏蔽',
+  },
+  {
     path: '/admin/settings',
     icon: 'i-mdi-cog',
     label: '设置',

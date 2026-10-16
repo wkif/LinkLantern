@@ -10,6 +10,22 @@ export interface HotboardItem {
   mobileUrl?: string
 }
 
+/** 热榜条目 + 命中的屏蔽关键词（命中时 title 已替换为占位文案） */
+export interface MaskedHotboardItem extends HotboardItem {
+  blockedBy?: string
+}
+
+/** 热榜屏蔽占位文案 */
+export const BLOCKED_PLACEHOLDER = '已屏蔽相关信息'
+
+
+interface BlockedKeywordsResponse {
+  success: boolean
+  data?: { keywords: string[] }
+  message?: string
+}
+
+
 export interface HotboardData {
   list: HotboardItem[]
   type: string
@@ -24,6 +40,12 @@ export interface HotboardPlatform {
 }
 
 export const useHotboard = () => {
+  // 登录令牌（setup 作用域捕获，供异步回调安全读取）
+  const { accessToken } = useAuth()
+
+  // 屏蔽关键词列表（登录用户共享，跨组件同步）
+  const blockedKeywords = useState<string[]>('hotboard:blocked-keywords', () => [])
+  const blockedKeywordsLoaded = useState<boolean>('hotboard:blocked-loaded', () => false)
   // 支持的热榜平台列表
   const platforms: HotboardPlatform[] = [
     // 视频/社区
@@ -48,6 +70,63 @@ export const useHotboard = () => {
     { type: 'douban-movie', name: '豆瓣电影', icon: 'i-mdi-movie', category: 'entertainment' },
     { type: 'weread', name: '微信读书', icon: 'i-mdi-book-open', category: 'entertainment' },
   ]
+
+  /**
+   * 从服务端加载屏蔽关键词（已登录时调用；未登录保持空列表）
+   */
+  const fetchBlockedKeywords = async (): Promise<void> => {
+    if (!accessToken.value) return
+    try {
+      const res = await $fetch<BlockedKeywordsResponse>('/api/auth/blocked-keywords', {
+        headers: { Authorization: `Bearer ${accessToken.value}` },
+      })
+      if (res.success && res.data) {
+        blockedKeywords.value = res.data.keywords
+        blockedKeywordsLoaded.value = true
+      }
+    } catch (error) {
+      console.error('[Hotboard] 加载屏蔽关键词失败:', error)
+    }
+  }
+
+  /**
+   * 全量保存屏蔽关键词到服务端
+   */
+  const saveBlockedKeywords = async (keywords: string[]): Promise<{ success: boolean; message?: string }> => {
+    if (!accessToken.value) {
+      return { success: false, message: '请先登录' }
+    }
+    try {
+      const res = await $fetch<BlockedKeywordsResponse>('/api/auth/blocked-keywords', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${accessToken.value}` },
+        body: { keywords },
+      })
+      if (res.success) {
+        blockedKeywords.value = res.data?.keywords ?? keywords
+        blockedKeywordsLoaded.value = true
+        return { success: true, message: res.message }
+      }
+      return { success: false, message: res.message }
+    } catch (error: unknown) {
+      const message = error && typeof error === 'object' && 'data' in error
+        ? (error.data as { statusMessage?: string } | undefined)?.statusMessage
+        : undefined
+      return { success: false, message: message || '保存失败，请稍后重试' }
+    }
+  }
+
+  /**
+   * 将热榜条目标记屏蔽：命中关键词的条目 title 替换为占位文案
+   */
+  const maskItems = (items: HotboardItem[]): MaskedHotboardItem[] => {
+    const keywords = blockedKeywords.value
+    if (keywords.length === 0) return items
+    return items.map((item) => {
+      const hit = keywords.find(k => item.title.includes(k))
+      return hit ? { ...item, title: BLOCKED_PLACEHOLDER, blockedBy: hit } : item
+    })
+  }
 
   // 当前激活的平台列表（用户可以自定义）
   const activePlatforms = useState<string[]>('hotboard:active', () => {
@@ -163,6 +242,10 @@ export const useHotboard = () => {
     activePlatforms: readonly(activePlatforms),
     hotboardCache: readonly(hotboardCache),
     loading: readonly(loading),
+    blockedKeywords: readonly(blockedKeywords),
+    fetchBlockedKeywords,
+    saveBlockedKeywords,
+    maskItems,
     fetchHotboard,
     fetchMultipleHotboards,
     setActivePlatforms,
